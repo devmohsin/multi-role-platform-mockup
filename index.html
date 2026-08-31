@@ -353,6 +353,7 @@ function seedState(){
       return [
         {id:"ex0", courseId:"crs1", title:"Placement Check",   date:pd(20), time:"10:00", room:"Room 2"},
         {id:"exp", courseId:"crs3", title:"Draft Review",      date:pd(15), time:"16:30", room:"Room 1"},
+        {id:"exs", courseId:"crs5", title:"Scratch Basics Check", date:pd(18), time:"16:00", room:"Lab"},
         {id:"ex1", courseId:"crs1", title:"Term Assessment",   date:fd(9),  time:"10:00", room:"Room 2"},
         {id:"ex2", courseId:"crs3", title:"Writing Portfolio", date:fd(7),  time:"16:30", room:"Room 1"},
         {id:"ex3", courseId:"crs4", title:"Science Quiz",      date:fd(11), time:"10:00", room:"Lab"},
@@ -362,7 +363,9 @@ function seedState(){
     })(),
     results: [
       {id:"rs1", examId:"ex0", childId:"c1", marks:85, teacherId:"t1", ts:now-19*DAY},
-      {id:"rs2", examId:"exp", childId:"c3", marks:78, teacherId:"t3", ts:now-14*DAY}
+      {id:"rs2", examId:"exp", childId:"c3", marks:78, teacherId:"t3", ts:now-14*DAY},
+      {id:"rs3", examId:"exs", childId:"c2", marks:72, teacherId:"t4", ts:now-17*DAY},
+      {id:"rs4", examId:"ex0", childId:"c4", marks:64, teacherId:"t1", ts:now-19*DAY}
     ],
     complaints: [
       {id:"cm1", parentId:"p2", subject:"Weekend parking", text:"Saturday pickup parking is difficult — could the academy arrange access to the side lot?", ts:now-6*DAY, status:"in_progress", reply:"We're arranging weekend access with the building manager — update by next week.", updatedAt:now-4*DAY}
@@ -1368,9 +1371,13 @@ function resultsTable(rows, withChild){
 VIEWS["child/results"] = me => pageHead("My results","") +
   resultsTable((S.results||[]).filter(r=>r.childId===me.id).sort((a,b)=>b.ts-a.ts), false);
 VIEWS["parent/results"] = me => {
-  const kidIds = childrenOf(me.id).map(k=>k.id);
+  const kids = childrenOf(me.id);
+  const kidIds = kids.map(k=>k.id);
+  const rows = (S.results||[]).filter(r=>kidIds.includes(r.childId)).sort((a,b)=>b.ts-a.ts);
+  const noneYet = kids.filter(k=>!rows.some(r=>r.childId===k.id));
   return pageHead("Results","Published results for all your children.") +
-    resultsTable((S.results||[]).filter(r=>kidIds.includes(r.childId)).sort((a,b)=>b.ts-a.ts), true);
+    resultsTable(rows, true) +
+    (noneYet.length?`<p class="tiny muted" style="margin-top:10px">No published results yet for ${noneYet.map(k=>"<b>"+esc(k.name.split(" ")[0])+"</b>").join(", ")} — they appear here as soon as a teacher enters marks after an exam.</p>`:"");
 };
 
 /* ---------------- profiles ---------------- */
