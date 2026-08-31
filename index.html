@@ -282,9 +282,9 @@ function seedState(){
       {id:"t4", role:"teacher", name:"James Park",   email:"james@brightway.demo", subjects:"Coding", bio:"Software engineer turned educator. Scratch, Python and lots of games.", status:"pending"},
       {id:"p1", role:"parent",  name:"Sarah Ahmed",  email:"sarah@family.demo",  phone:"+65 9123 4567", address:"Blk 123 Tampines St 45, #05-67, Singapore 521123"},
       {id:"p2", role:"parent",  name:"Michael Lee",  email:"michael@family.demo", phone:"+65 9876 5432", address:"18 Bedok Rise, #12-03, Singapore 469421"},
-      {id:"c1", role:"child", parentId:"p1", name:"Zara Ahmed", age:9},
-      {id:"c2", role:"child", parentId:"p1", name:"Adam Ahmed", age:12},
-      {id:"c3", role:"child", parentId:"p2", name:"Emma Lee",  age:10}
+      {id:"c1", role:"child", parentId:"p1", name:"Zara Ahmed", age:9,  accessCode:"ZARA-4827"},
+      {id:"c2", role:"child", parentId:"p1", name:"Adam Ahmed", age:12, accessCode:"ADAM-3915"},
+      {id:"c3", role:"child", parentId:"p2", name:"Emma Lee",  age:10, accessCode:"EMMA-7208"}
     ],
     courses: [
       {id:"crs1", title:"Maths Foundations",  subject:"Maths",   icon:"➗", teacherId:"t1", price:120, desc:"Small-group maths for ages 8–11. Number sense, fractions and word problems, taught through games and weekly challenges.", schedule:[{day:"Mon",time:"16:00"},{day:"Wed",time:"16:00"}], status:"active"},
@@ -428,6 +428,7 @@ async function pollCloud(){
       try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(e){}
       const sess = getSess();
       S.events.filter(ev=>!prevIds.has(ev.id) && eventFor(ev,sess)).slice(0,3).reverse().forEach(ev=>toast(ev.icon+" "+ev.text));
+      ensureChildCodes();
       const y = window.scrollY; render(); window.scrollTo(0, y);
       setSync("live");
     }
@@ -438,6 +439,7 @@ async function pollCloud(){
 }
 setInterval(pollCloud, 2500);
 pollCloud();
+ensureChildCodes();
 
 /* session (per tab) */
 function getSess(){ try{ return JSON.parse(sessionStorage.getItem("bw-sess")) || {}; }catch(e){ return {}; } }
@@ -497,6 +499,12 @@ function gradeChip(m){ const g=gradeOf(m); const cls = g==="A"||g==="B" ? "chip-
 const CMP_LABEL = {open:"Open", in_progress:"In progress", resolved:"Resolved"};
 const CMP_CHIP  = {open:"chip-warn", in_progress:"chip-accent", resolved:"chip-good"};
 const exam = id => (S.exams||[]).find(e=>e.id===id);
+function makeCode(name){ return (name.split(" ")[0]||"KID").toUpperCase().replace(/[^A-Z]/g,"").slice(0,6) + "-" + (1000 + Math.floor(Math.random()*9000)); }
+function ensureChildCodes(){
+  let changed = false;
+  S.users.filter(u=>u.role==="child" && !u.accessCode).forEach(k=>{ k.accessCode = makeCode(k.name); changed = true; });
+  if(changed) save();
+}
 const isFutureDate = d => d >= new Date().toISOString().slice(0,10);
 function isEnrolled(crsId, childId){ return S.enrollments.some(e=>e.courseId===crsId && e.childId===childId); }
 
@@ -635,6 +643,11 @@ function pickerView(){
             <span class="go" aria-hidden="true">→</span>
           </button>`).join("")}
         </div>
+        ${g.role==="child"?`<form data-form="childCode" style="padding:10px 12px 14px;border-top:1px solid var(--line)">
+          <label class="tiny" style="font-weight:700;color:var(--ink2);display:block;margin-bottom:6px">Student sign in with access code</label>
+          <div style="display:flex;gap:8px"><input name="code" placeholder="e.g. ZARA-4827" style="flex:1;min-width:0;text-transform:uppercase" autocomplete="off"><button class="btn btn-primary btn-sm" type="submit">Go</button></div>
+          <div class="tiny muted" style="margin-top:6px">Parents see and reset codes under My children — kids never need passwords.</div>
+        </form>`:""}
       </div>`).join("")}
     </div>
     <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:26px">
@@ -776,6 +789,10 @@ VIEWS["parent/children"] = me => {
         <button class="btn btn-ghost btn-sm" data-act="goChild" data-arg="${k.id}">View progress</button>
       </div>
       <div style="margin-top:8px">${childCourses(k.id).map(c=>`<span class="chip chip-primary" style="margin:3px 4px 0 0">${esc(c.title)}</span>`).join("")||`<span class="tiny muted">No classes yet</span>`}</div>
+      <div class="tiny" style="margin-top:10px;background:var(--surface2);border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span class="muted">Sign-in code:</span> <b class="num">${esc(k.accessCode||"—")}</b>
+        <button class="btn btn-ghost btn-sm" data-act="regenCode" data-arg="${k.id}" style="margin-left:auto">↻ New code</button>
+      </div>
     </div>`).join("")}
     <div class="card card-pad">
       <h3 style="font-size:16px;margin-bottom:12px">Add a child</h3>
@@ -1610,6 +1627,11 @@ const ACTIONS = {
   openProgress(){ progressModal(); },
   openProgressFor(arg){ const [child, crs]=arg.split("|"); progressModal(child, crs); },
   schedChild(id){ setSess({schedChild:id}); render(); },
+  regenCode(id){
+    const k = user(id); if(!k) return;
+    commit(()=>{ k.accessCode = makeCode(k.name); addEvent("🔑","Your sign-in code was changed by your parent.",[],[id]); });
+    toast("New code for "+k.name.split(" ")[0]+": "+k.accessCode);
+  },
   attClass(id){ setSess({attClass:id}); render(); },
   resExam(id){ setSess({resExam:id}); render(); },
   adAttClass(id){ setSess({adAttClass:id}); render(); },
@@ -1678,13 +1700,22 @@ const ACTIONS = {
 };
 
 const FORMS = {
+  childCode(fd, form){
+    const raw = (fd.get("code")||"").toUpperCase().replace(/\s+/g,"");
+    if(!raw) return;
+    const k = S.users.find(u=>u.role==="child" && (u.accessCode||"").toUpperCase()===raw);
+    if(k){ ACTIONS.signIn(k.id); toast("Welcome back, "+k.name.split(" ")[0]+"! 🎉"); }
+    else { toast("Code not recognised — ask your parent to check it under My children."); form.reset(); }
+  },
   addChild(fd){
     const name=(fd.get("name")||"").trim(); const age=Number(fd.get("age"));
     if(!name||!age) return;
     const me=user(getSess().userId);
-    commit(()=>{ S.users.push({id:uid("c"), role:"child", parentId:me.id, name, age});
+    let code;
+    commit(()=>{ code = makeCode(name);
+      S.users.push({id:uid("c"), role:"child", parentId:me.id, name, age, accessCode:code});
       addEvent("👧", me.name+" added a new child: "+name+".", ["admin"], []); });
-    toast(name+" has been added. You can enrol them in any class now.");
+    toast(name+" has been added — their sign-in code is "+code+".");
   },
   pay(fd, form){
     const crsId = form.dataset.course; const childId = fd.get("childId");
@@ -1772,7 +1803,7 @@ const FORMS = {
     const name = (fd.get("name")||"").trim(); if(!name) return;
     commit(()=>{
       if(role==="child"){
-        S.users.push({id:uid("c"), role:"child", parentId:fd.get("parentId"), name, age:Number(fd.get("age"))||8});
+        S.users.push({id:uid("c"), role:"child", parentId:fd.get("parentId"), name, age:Number(fd.get("age"))||8, accessCode:makeCode(name)});
       } else if(role==="teacher"){
         S.users.push({id:uid("t"), role:"teacher", name, email:(fd.get("email")||"").trim(), subjects:(fd.get("subjects")||"").trim(), bio:(fd.get("bio")||"").trim(), status:"active"});
       } else {
