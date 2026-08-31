@@ -367,9 +367,7 @@ function seedState(){
       {id:"rs3", examId:"exs", childId:"c2", marks:72, teacherId:"t4", ts:now-17*DAY},
       {id:"rs4", examId:"ex0", childId:"c4", marks:64, teacherId:"t1", ts:now-19*DAY}
     ],
-    complaints: [
-      {id:"cm1", parentId:"p2", subject:"Weekend parking", text:"Saturday pickup parking is difficult — could the academy arrange access to the side lot?", ts:now-6*DAY, status:"in_progress", reply:"We're arranging weekend access with the building manager — update by next week.", updatedAt:now-4*DAY}
-    ],
+    complaints: [],
     events: [
       {id:"ev1", ts:now-2*DAY, icon:"⭐", text:"New review from Sarah Ahmed is awaiting approval (Beginner Piano).", roles:["admin"], userIds:[]}
     ]
@@ -563,10 +561,10 @@ function toast(msg){
 
 /* ============================ shell ============================== */
 const NAV = {
-  parent:  [["dashboard","home","Home"],["browse","search","Classes"],["children","users","My children"],["schedule","calendar","Timetable"],["payments","card","Payments"],["results","award","Results"],["exams","file","Exams"],["complaints","message","Complaints"],["notifications","bell","Notifications"],["profile","user","Profile"]],
+  parent:  [["dashboard","home","Home"],["browse","search","Classes"],["children","users","My children"],["schedule","calendar","Timetable"],["payments","card","Payments"],["results","award","Results"],["exams","file","Exams"],["notifications","bell","Notifications"],["profile","user","Profile"]],
   child:   [["dashboard","home","Home"],["myclasses","book","My classes"],["schedule","calendar","Schedule"],["results","award","Results"],["exams","file","Exams"],["progress","star","Progress"],["notifications","bell","Notifications"],["profile","user","Profile"]],
   teacher: [["dashboard","home","Home"],["classes","book","My classes"],["students","grad","Students"],["attendance","clip","Attendance"],["results","award","Results"],["exams","file","Exams"],["schedule","calendar","Schedule"],["notifications","bell","Notifications"],["profile","user","Profile"]],
-  admin:   [["dashboard","home","Home"],["users","users","Users"],["courses","book","Classes"],["payments","card","Payments"],["attendance","clip","Attendance"],["exams","file","Exams"],["reviews","star","Reviews"],["complaints","message","Complaints"],["reports","chart","Reports"],["notifications","bell","Notifications"]]
+  admin:   [["dashboard","home","Home"],["users","users","Users"],["courses","book","Classes"],["payments","card","Payments"],["attendance","clip","Attendance"],["exams","file","Exams"],["reviews","star","Reviews"],["reports","chart","Reports"],["notifications","bell","Notifications"]]
 };
 const ROLE_LABEL = {admin:"Admin", teacher:"Teacher", parent:"Parent", child:"Student"};
 const ROLE_CHIP  = {admin:"chip-accent", teacher:"chip-primary", parent:"chip-good", child:"chip-warn"};
@@ -625,7 +623,7 @@ function pickerView(){
   const groups = [
     {role:"admin",   cls:"rp-admin",   ico:"building", title:"Admin",   desc:"Runs the academy — people, classes, money, reviews."},
     {role:"teacher", cls:"rp-teacher", ico:"book",     title:"Teacher", desc:"Teaches classes, tracks each student's progress."},
-    {role:"parent",  cls:"rp-parent",  ico:"heart",    title:"Parent",  desc:"Enrols children, pays, follows progress, reviews."},
+    {role:"parent",  cls:"rp-parent",  ico:"heart",    title:"Parent",  desc:"Sees their children's classes, fees, progress and results — always up to date."},
     {role:"child",   cls:"rp-student", ico:"grad",     title:"Student", desc:"Sees their classes, schedule and achievements."}
   ];
   const personaMeta = u =>
@@ -637,7 +635,7 @@ function pickerView(){
     <div class="hero-in">
       ${brand()}
       <h1>One academy,<br>four experiences.</h1>
-      <p class="lede">A live, clickable demo of the whole platform. Sign in as anyone below and try the real journeys — enrol a child, take a payment, post a progress update, approve a review — and watch it ripple across every other dashboard.</p>
+      <p class="lede">A live, clickable demo of the whole platform. The academy admin runs everything, teachers handle attendance, results and their students — and families watch it all update in real time. Sign in as anyone below and try it.</p>
       <div class="hero-stats">
         <span class="hero-stat"><b>${S.courses.filter(c=>c.status==="active").length}</b> weekly classes</span>
         <span class="hero-stat"><b>${S.users.filter(u=>u.role==="teacher"&&u.status==="active").length}</b> teachers</span>
@@ -717,18 +715,19 @@ VIEWS["parent/dashboard"] = me => {
           <span style="flex:1"></span>
           <button class="btn btn-ghost btn-sm" data-act="goChild" data-arg="${k.id}">Progress</button>
         </div>
-        ${crs.length ? crs.map(c=>`<div class="list-row">${cdot(c)}<div class="grow"><b class="small">${esc(c.title)}</b><div class="tiny muted">${fmtSched(c.schedule)}</div></div></div>`).join("") : `<div class="empty">Not enrolled yet — browse classes to get started.</div>`}
+        ${crs.length ? crs.map(c=>`<div class="list-row">${cdot(c)}<div class="grow"><b class="small">${esc(c.title)}</b><div class="tiny muted">${fmtSched(c.schedule)}</div></div></div>`).join("") : `<div class="empty">Not enrolled yet — the academy office handles enrolment.</div>`}
         ${latest?`<div class="tiny" style="margin-top:10px;background:var(--surface2);border-radius:9px;padding:9px 12px"><span class="stars">${starStr(latest.score)}</span> ${esc(latest.note.slice(0,90))}${latest.note.length>90?"…":""}<div class="muted" style="margin-top:2px">${esc((course(latest.courseId)||{}).title||"")} · ${ago(latest.ts)}</div></div>`:""}
         ${(()=>{const s=attSummary(attOf(k.id)); return s.rate==null?"":`<div class="tiny muted" style="margin-top:8px">Attendance <b style="color:var(--ink)" class="num">${s.rate}%</b> · ${s.ab} absence${s.ab===1?"":"s"}${s.l?` · ${s.l} late`:""}</div>`;})()}
       </div>`;
     }).join("")}
     <div class="card card-pad">
-      <div class="eyebrow">Quick actions</div>
+      <div class="eyebrow">Quick links</div>
       <div style="display:flex;flex-direction:column;gap:9px;margin-top:12px">
         <button class="btn btn-primary" data-act="go" data-arg="browse">Browse classes</button>
-        <button class="btn btn-ghost" data-act="go" data-arg="children">Add a child</button>
-        <button class="btn btn-ghost" data-act="go" data-arg="payments">View payments</button>
+        <button class="btn btn-ghost" data-act="go" data-arg="schedule">Family timetable</button>
+        <button class="btn btn-ghost" data-act="go" data-arg="payments">Payments & invoices</button>
       </div>
+      <p class="tiny muted" style="margin-top:12px">Enrolments, payments and account changes are handled by the academy office — everything here updates for you automatically.</p>
     </div>
   </div>
   <h2 class="section-title">Latest updates from teachers</h2>
@@ -777,16 +776,13 @@ function courseDetail(me, sess){
         <div class="list-row"><span class="avatar" style="width:36px;height:36px;font-size:13px">${initials(t?t.name:"?")}</span><div class="grow small"><b>${esc(t?t.name:"TBC")}</b> <span class="muted">· ${esc(t?t.subjects:"")}</span><div class="muted">${esc(t?t.bio:"")}</div></div></div>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;flex-wrap:wrap">
           <span class="price num" style="font-size:24px">${money(c.price)}<span> /month</span></span>
-          <button class="btn btn-primary" data-act="openEnroll" data-arg="${c.id}">Enrol a child</button>
+          <span class="tiny muted" style="max-width:26ch;text-align:right">Enrolment and payment are handled by the academy office.</span>
         </div>
         ${enrolledKids.length?`<div class="tiny" style="margin-top:10px"><span class="chip chip-good">✓ Enrolled: ${enrolledKids.map(k=>esc(k.name.split(" ")[0])).join(", ")}</span></div>`:""}
       </div>
     </div>
     <div class="card card-pad">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-        <h2 style="font-size:18px">Reviews</h2>
-        ${enrolledKids.length?`<button class="btn btn-ghost btn-sm" data-act="openReview" data-arg="${c.id}">Write a review</button>`:`<span class="tiny muted">Enrol to review</span>`}
-      </div>
+      <h2 style="font-size:18px">Reviews</h2>
       ${revs.length ? revs.map(rv=>`<div class="list-row"><div class="grow">
           <span class="stars">${starStr(rv.rating)}</span>
           <div class="small">${esc(rv.text)}</div>
@@ -815,12 +811,8 @@ VIEWS["parent/children"] = me => {
       </div>`}
     </div>`).join("")}
     <div class="card card-pad">
-      <h3 style="font-size:16px;margin-bottom:12px">Add a child</h3>
-      <form data-form="addChild">
-        <div class="field"><label>Full name</label><input name="name" required placeholder="e.g. Noah Ahmed"></div>
-        <div class="field"><label>Age</label><input name="age" type="number" min="4" max="18" required placeholder="e.g. 8"></div>
-        <button class="btn btn-primary" type="submit">Add child</button>
-      </form>
+      <h3 style="font-size:16px;margin-bottom:8px">Adding a child</h3>
+      <p class="small muted">The academy office registers children and manages enrolments — contact them and your family's records appear here automatically. You manage each child's sign-in code from their card.</p>
     </div>
   </div>`;
 };
@@ -917,7 +909,7 @@ VIEWS["child/dashboard"] = me => {
     ${statCard("calendar","Next class",`<span style="font-size:19px">${next.length?(next[0].offset===0?"Today":next[0].offset===1?"Tomorrow":next[0].day)+" "+fmtTime(next[0].time):"—"}</span>`,next.length?esc(next[0].course.title):"")}
   </div>
   <h2 class="section-title">Coming up</h2>
-  ${next.length?next.map(n=>`<div class="sess"><span class="sess-time num">${n.offset===0?"Today":n.offset===1?"Tmrw":n.day} ${fmtTime(n.time)}</span>${cdot(n.course)}<div class="grow"><b class="small">${esc(n.course.title)}</b><div class="tiny muted">with ${esc((user(n.course.teacherId)||{}).name||"")}</div></div></div>`).join(""):`<div class="empty">No classes yet — ask a parent to enrol you!</div>`}
+  ${next.length?next.map(n=>`<div class="sess"><span class="sess-time num">${n.offset===0?"Today":n.offset===1?"Tmrw":n.day} ${fmtTime(n.time)}</span>${cdot(n.course)}<div class="grow"><b class="small">${esc(n.course.title)}</b><div class="tiny muted">with ${esc((user(n.course.teacherId)||{}).name||"")}</div></div></div>`).join(""):`<div class="empty">No classes yet — the academy will enrol you soon!</div>`}
   <h2 class="section-title">Recent feedback from my teachers</h2>
   <div class="card card-pad">
     ${prog.length?prog.map(p=>`<div class="list-row">${cdot(course(p.courseId))}<div class="grow"><b class="small">${esc((course(p.courseId)||{}).title||"")}</b> <span class="stars tiny">${starStr(p.score)}</span><div class="small muted">${esc(p.note)}</div><div class="tiny" style="color:var(--ink3)">${ago(p.ts)}</div></div></div>`).join(""):`<div class="empty">Nothing yet — your teachers will post updates here.</div>`}
@@ -1089,7 +1081,6 @@ VIEWS["admin/dashboard"] = me => {
   const students = S.users.filter(u=>u.role==="child").length;
   const pendingRevs = S.reviews.filter(r=>r.status==="pending").length;
   const pendingTeachers = S.users.filter(u=>u.role==="teacher"&&u.status==="pending").length;
-  const openCmp = (S.complaints||[]).filter(c=>c.status!=="resolved").length;
   const pendingKids = S.users.filter(u=>childPending(u)).length;
   const activity = S.events.slice(0,6);
   return pageHead("Academy overview", "Everything happening across Brightway, live.") + `
@@ -1097,7 +1088,7 @@ VIEWS["admin/dashboard"] = me => {
     ${statCard("dollar","Revenue · this month",money(thisMonth))}
     ${statCard("grad","Active enrolments",S.enrollments.length,students+" students")}
     ${statCard("book","Classes",S.courses.filter(c=>c.status==="active").length,S.users.filter(u=>u.role==="teacher"&&u.status==="active").length+" active teachers")}
-    ${statCard("alert","Needs attention",pendingRevs+pendingTeachers+openCmp+pendingKids,pendingRevs+" review"+(pendingRevs===1?"":"s")+" · "+pendingTeachers+" teacher"+(pendingTeachers===1?"":"s")+" · "+openCmp+" complaint"+(openCmp===1?"":"s")+" · "+pendingKids+" student"+(pendingKids===1?"":"s"))}
+    ${statCard("alert","Needs attention",pendingRevs+pendingTeachers+pendingKids,pendingRevs+" review"+(pendingRevs===1?"":"s")+" · "+pendingTeachers+" teacher"+(pendingTeachers===1?"":"s")+" · "+pendingKids+" student"+(pendingKids===1?"":"s"))}
   </div>
   <div class="grid2">
     <div class="card card-pad">
@@ -1937,7 +1928,7 @@ const FORMS = {
     });
     closeModal();
     ACTIONS.signIn(id);
-    toast("Welcome to Brightway, "+name.split(" ")[0]+"! Add a child, then browse classes.");
+    toast("Welcome to Brightway, "+name.split(" ")[0]+"! The academy office will link your children to your account.");
   },
   applyTeacher(fd){
     const name=(fd.get("name")||"").trim(); if(!name) return;
