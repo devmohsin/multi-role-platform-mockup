@@ -282,9 +282,12 @@ function seedState(){
       {id:"t4", role:"teacher", name:"James Park",   email:"james@brightway.demo", subjects:"Coding", bio:"Software engineer turned educator. Scratch, Python and lots of games.", status:"pending"},
       {id:"p1", role:"parent",  name:"Sarah Ahmed",  email:"sarah@family.demo",  phone:"+65 9123 4567", address:"Blk 123 Tampines St 45, #05-67, Singapore 521123"},
       {id:"p2", role:"parent",  name:"Michael Lee",  email:"michael@family.demo", phone:"+65 9876 5432", address:"18 Bedok Rise, #12-03, Singapore 469421"},
-      {id:"c1", role:"child", parentId:"p1", name:"Zara Ahmed", age:9,  accessCode:"ZARA-4827"},
-      {id:"c2", role:"child", parentId:"p1", name:"Adam Ahmed", age:12, accessCode:"ADAM-3915"},
-      {id:"c3", role:"child", parentId:"p2", name:"Emma Lee",  age:10, accessCode:"EMMA-7208"}
+      {id:"p3", role:"parent",  name:"Aisha Rahman", email:"aisha@family.demo",  phone:"+65 8321 7654", address:"5 Jurong West Ave 3, #08-11, Singapore 649880"},
+      {id:"c1", role:"child", parentId:"p1", name:"Zara Ahmed", age:9,  accessCode:"ZARA-4827", status:"active"},
+      {id:"c2", role:"child", parentId:"p1", name:"Adam Ahmed", age:12, accessCode:"ADAM-3915", status:"active"},
+      {id:"c3", role:"child", parentId:"p2", name:"Emma Lee",  age:10, accessCode:"EMMA-7208", status:"active"},
+      {id:"c4", role:"child", parentId:"p3", name:"Iman Rahman",  age:8,  accessCode:"IMAN-5561", status:"active"},
+      {id:"c5", role:"child", parentId:"p3", name:"Yusuf Rahman", age:11, accessCode:"YUSUF-2210", status:"active"}
     ],
     courses: [
       {id:"crs1", title:"Maths Foundations",  subject:"Maths",   icon:"➗", teacherId:"t1", price:120, desc:"Small-group maths for ages 8–11. Number sense, fractions and word problems, taught through games and weekly challenges.", schedule:[{day:"Mon",time:"16:00"},{day:"Wed",time:"16:00"}], status:"active"},
@@ -298,7 +301,10 @@ function seedState(){
       {id:"e1", courseId:"crs1", childId:"c1", parentId:"p1", ts:m(3)},
       {id:"e2", courseId:"crs2", childId:"c1", parentId:"p1", ts:m(2)},
       {id:"e3", courseId:"crs5", childId:"c2", parentId:"p1", ts:m(2)},
-      {id:"e4", courseId:"crs3", childId:"c3", parentId:"p2", ts:m(4)}
+      {id:"e4", courseId:"crs3", childId:"c3", parentId:"p2", ts:m(4)},
+      {id:"e5", courseId:"crs4", childId:"c4", parentId:"p3", ts:m(1)},
+      {id:"e6", courseId:"crs6", childId:"c5", parentId:"p3", ts:m(1)},
+      {id:"e7", courseId:"crs1", childId:"c4", parentId:"p3", ts:m(1)}
     ],
     payments: [
       {id:"pay1", invoiceNo:"INV-1001", ts:m(5), parentId:"p2", childId:"c3", courseId:"crs3", amount:90,  method:"Visa •••• 4242", status:"paid"},
@@ -307,9 +313,11 @@ function seedState(){
       {id:"pay4", invoiceNo:"INV-1004", ts:m(2), parentId:"p1", childId:"c1", courseId:"crs2", amount:150, method:"Mastercard •••• 5100", status:"paid"},
       {id:"pay5", invoiceNo:"INV-1005", ts:m(2), parentId:"p1", childId:"c2", courseId:"crs5", amount:130, method:"Mastercard •••• 5100", status:"paid"},
       {id:"pay6", invoiceNo:"INV-1006", ts:m(1), parentId:"p1", childId:"c1", courseId:"crs1", amount:120, method:"Mastercard •••• 5100", status:"paid"},
-      {id:"pay7", invoiceNo:"INV-1007", ts:m(1), parentId:"p2", childId:"c3", courseId:"crs3", amount:90,  method:"Visa •••• 4242", status:"paid"}
+      {id:"pay7", invoiceNo:"INV-1007", ts:m(1), parentId:"p2", childId:"c3", courseId:"crs3", amount:90,  method:"Visa •••• 4242", status:"paid"},
+      {id:"pay8", invoiceNo:"INV-1008", ts:m(1), parentId:"p3", childId:"c4", courseId:"crs4", amount:110, method:"PayNow", status:"paid"},
+      {id:"pay9", invoiceNo:"INV-1009", ts:m(1), parentId:"p3", childId:"c5", courseId:"crs6", amount:140, method:"PayNow", status:"paid"}
     ],
-    invSeq: 1008,
+    invSeq: 1010,
     reviews: [
       {id:"rv1", courseId:"crs1", parentId:"p1", rating:5, text:"Zara went from dreading maths homework to asking for extra challenges. Maya is wonderful.", ts:m(1), status:"approved"},
       {id:"rv2", courseId:"crs3", parentId:"p2", rating:4, text:"Emma looks forward to Thursdays all week. Would love slightly more written feedback.", ts:m(2), status:"approved"},
@@ -499,6 +507,7 @@ function gradeChip(m){ const g=gradeOf(m); const cls = g==="A"||g==="B" ? "chip-
 const CMP_LABEL = {open:"Open", in_progress:"In progress", resolved:"Resolved"};
 const CMP_CHIP  = {open:"chip-warn", in_progress:"chip-accent", resolved:"chip-good"};
 const exam = id => (S.exams||[]).find(e=>e.id===id);
+const childPending = k => !!k && k.role==="child" && k.status==="pending";
 function makeCode(name){ return (name.split(" ")[0]||"KID").toUpperCase().replace(/[^A-Z]/g,"").slice(0,6) + "-" + (1000 + Math.floor(Math.random()*9000)); }
 function ensureChildCodes(){
   let changed = false;
@@ -611,7 +620,7 @@ function pickerView(){
   ];
   const personaMeta = u =>
     u.role==="teacher" ? esc(u.subjects||"")+(u.status==="pending"?" · awaiting approval":"")
-    : u.role==="child" ? "Age "+u.age+" · "+esc(((user(u.parentId)||{}).name||"").split(" ")[0])+"’s family"
+    : u.role==="child" ? "Age "+u.age+" · "+esc(((user(u.parentId)||{}).name||"").split(" ")[0])+"’s family"+(childPending(u)?" · awaiting approval":"")
     : u.role==="parent" ? childrenOf(u.id).length+" child"+(childrenOf(u.id).length===1?"":"ren")+" · "+S.enrollments.filter(e=>e.parentId===u.id).length+" enrolments"
     : "Academy owner";
   return `<div class="hero">
@@ -784,15 +793,16 @@ VIEWS["parent/children"] = me => {
     ${kids.map(k=>`<div class="card card-pad">
       <div style="display:flex;align-items:center;gap:12px">
         <span class="avatar" style="width:42px;height:42px">${initials(k.name)}</span>
-        <div><b>${esc(k.name)}</b><div class="tiny muted">Age ${k.age}</div></div>
+        <div><b>${esc(k.name)}</b> ${childPending(k)?`<span class="chip chip-warn">Awaiting approval</span>`:""}<div class="tiny muted">Age ${k.age}</div></div>
         <span style="flex:1"></span>
         <button class="btn btn-ghost btn-sm" data-act="goChild" data-arg="${k.id}">View progress</button>
       </div>
       <div style="margin-top:8px">${childCourses(k.id).map(c=>`<span class="chip chip-primary" style="margin:3px 4px 0 0">${esc(c.title)}</span>`).join("")||`<span class="tiny muted">No classes yet</span>`}</div>
-      <div class="tiny" style="margin-top:10px;background:var(--surface2);border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      ${childPending(k)?`<div class="tiny muted" style="margin-top:10px;background:var(--surface2);border-radius:8px;padding:8px 12px">The academy is reviewing this account. Enrolment and their sign-in code unlock once approved.</div>`
+      :`<div class="tiny" style="margin-top:10px;background:var(--surface2);border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <span class="muted">Sign-in code:</span> <b class="num">${esc(k.accessCode||"—")}</b>
         <button class="btn btn-ghost btn-sm" data-act="regenCode" data-arg="${k.id}" style="margin-left:auto">↻ New code</button>
-      </div>
+      </div>`}
     </div>`).join("")}
     <div class="card card-pad">
       <h3 style="font-size:16px;margin-bottom:12px">Add a child</h3>
@@ -877,6 +887,11 @@ function nextSessionsFor(courses, limit){
 }
 
 VIEWS["child/dashboard"] = me => {
+  if(childPending(me)) return pageHead("Almost there! 🎈","") + `
+    <div class="card card-pad" style="max-width:560px">
+      <span class="chip chip-warn">Awaiting approval</span>
+      <p class="small" style="margin-top:12px">The academy is setting up your account. Once the admin approves it, your classes, timetable and everything else will appear here.<br><br><span class="muted">Demo tip: sign in as <b>Alex Morgan (Admin)</b> in another window and approve this student under Users → Students — then watch this page come to life.</span></p>
+    </div>`;
   const crs = childCourses(me.id);
   const next = nextSessionsFor(crs, 3);
   const prog = S.progress.filter(p=>p.childId===me.id).sort((a,b)=>b.ts-a.ts).slice(0,3);
@@ -1050,13 +1065,14 @@ VIEWS["admin/dashboard"] = me => {
   const pendingRevs = S.reviews.filter(r=>r.status==="pending").length;
   const pendingTeachers = S.users.filter(u=>u.role==="teacher"&&u.status==="pending").length;
   const openCmp = (S.complaints||[]).filter(c=>c.status!=="resolved").length;
+  const pendingKids = S.users.filter(u=>childPending(u)).length;
   const activity = S.events.slice(0,6);
   return pageHead("Academy overview", "Everything happening across Brightway, live.") + `
   <div class="stat-row">
     ${statCard("dollar","Revenue · this month",money(thisMonth))}
     ${statCard("grad","Active enrolments",S.enrollments.length,students+" students")}
     ${statCard("book","Classes",S.courses.filter(c=>c.status==="active").length,S.users.filter(u=>u.role==="teacher"&&u.status==="active").length+" active teachers")}
-    ${statCard("alert","Needs attention",pendingRevs+pendingTeachers+openCmp,pendingRevs+" review"+(pendingRevs===1?"":"s")+" · "+pendingTeachers+" teacher"+(pendingTeachers===1?"":"s")+" · "+openCmp+" complaint"+(openCmp===1?"":"s"))}
+    ${statCard("alert","Needs attention",pendingRevs+pendingTeachers+openCmp+pendingKids,pendingRevs+" review"+(pendingRevs===1?"":"s")+" · "+pendingTeachers+" teacher"+(pendingTeachers===1?"":"s")+" · "+openCmp+" complaint"+(openCmp===1?"":"s")+" · "+pendingKids+" student"+(pendingKids===1?"":"s"))}
   </div>
   <div class="grid2">
     <div class="card card-pad">
@@ -1094,10 +1110,12 @@ VIEWS["admin/users"] = (me, sess) => {
       <td class="num"><b>${money(paid)}</b></td></tr>`;
     }).join("")}</tbody></table></div>`;
   } else {
-    body = `<div class="card tablewrap"><table><thead><tr><th>Student</th><th>Age</th><th>Parent</th><th>Classes</th></tr></thead><tbody>
+    body = `<div class="card tablewrap"><table><thead><tr><th>Student</th><th>Age</th><th>Parent</th><th>Classes</th><th>Status</th><th></th></tr></thead><tbody>
     ${S.users.filter(u=>u.role==="child").map(k=>`<tr><td><b>${esc(k.name)}</b></td><td class="num">${k.age}</td>
       <td class="muted">${esc((user(k.parentId)||{}).name||"—")}</td>
-      <td class="muted">${childCourses(k.id).map(c=>esc(c.title)).join(", ")||"—"}</td></tr>`).join("")}</tbody></table></div>`;
+      <td class="muted">${childCourses(k.id).map(c=>esc(c.title)).join(", ")||"—"}</td>
+      <td>${childPending(k)?`<span class="chip chip-warn">Pending</span>`:`<span class="chip chip-good">Active</span>`}</td>
+      <td>${childPending(k)?`<button class="btn btn-primary btn-sm" data-act="approveChild" data-arg="${k.id}">Approve</button>`:""}</td></tr>`).join("")}</tbody></table></div>`;
   }
   return pageHead("Users","Approve teachers, add people, and see every family at a glance.",
     `<button class="btn btn-primary" data-act="openAddUser">＋ Add user</button>`) + `
@@ -1438,7 +1456,13 @@ function enrollModal(crsId, step, chosenChildId){
   openModal(modalHead("Enrol in " + esc(c.title)) + `<div class="modal-body">
     <form data-form="pay" data-course="${c.id}">
       <div class="field"><label>Which child?</label>
-        <select name="childId" required>${kids.map(k=>`<option value="${k.id}" ${isEnrolled(c.id,k.id)?"disabled":""}>${esc(k.name)} (age ${k.age})${isEnrolled(c.id,k.id)?" — already enrolled":""}</option>`).join("")}</select>
+        <select name="childId" required>${(()=>{
+          const firstOk = kids.find(k=>!isEnrolled(c.id,k.id) && !childPending(k));
+          return kids.map(k=>{
+            const dis = isEnrolled(c.id,k.id) || childPending(k);
+            return `<option value="${k.id}" ${dis?"disabled":""} ${firstOk&&k.id===firstOk.id?"selected":""}>${esc(k.name)} (age ${k.age})${isEnrolled(c.id,k.id)?" — already enrolled":childPending(k)?" — awaiting approval":""}</option>`;
+          }).join("");
+        })()}</select>
       </div>
       <div class="payline"><span class="muted">${esc(c.title)} · first month</span><span class="num">${money(c.price)}</span></div>
       <div class="payline total"><span>Total due today</span><span class="num">${money(c.price)}</span></div>
@@ -1622,7 +1646,16 @@ const ACTIONS = {
   toggleBell(){ setSess({bellOpen:!getSess().bellOpen}); render(); },
   veil(){ closeModal(); },
   closeModal(){ closeModal(); },
-  openEnroll(id){ const kids=childrenOf(getSess().userId); if(!kids.length){ toast("Add a child first (My children)."); return; } if(kids.every(k=>isEnrolled(id,k.id))){ toast("All your children are already enrolled in this class."); return; } enrollModal(id,"form"); },
+  openEnroll(id){
+    const kids=childrenOf(getSess().userId);
+    if(!kids.length){ toast("Add a child first (My children)."); return; }
+    const eligible = kids.filter(k=>!isEnrolled(id,k.id) && !childPending(k));
+    if(!eligible.length){
+      toast(kids.some(childPending) ? "Your child is still awaiting academy approval — enrolment opens once they're approved." : "All your children are already enrolled in this class.");
+      return;
+    }
+    enrollModal(id,"form");
+  },
   openReview(id){ reviewModal(id); },
   openProgress(){ progressModal(); },
   openProgressFor(arg){ const [child, crs]=arg.split("|"); progressModal(child, crs); },
@@ -1673,6 +1706,15 @@ const ACTIONS = {
       if(status==="late")   addEvent("📋", k.name+" arrived late to "+c.title+" ("+fmtDateStr(date)+").", [], [k.parentId]);
     });
   },
+  approveChild(id){
+    const k = user(id); if(!k) return;
+    commit(()=>{
+      k.status = "active";
+      addEvent("✅", k.name+" has been approved by the academy — you can now enrol them in classes.", [], [k.parentId]);
+      addEvent("🎉", "Welcome to Brightway Academy, "+k.name.split(" ")[0]+"! Your account is active.", [], [id]);
+    });
+    toast(k.name+" approved — the family has been notified.");
+  },
   approveTeacher(id){
     commit(()=>{ const t=user(id); if(t){ t.status="active"; addEvent("🎉","Your teacher account was approved — welcome aboard!",[],[id]); addEvent("👩‍🏫", t.name+" was approved as a teacher.", ["admin"], []); } });
     toast("Teacher approved — their account is live.");
@@ -1704,7 +1746,8 @@ const FORMS = {
     const raw = (fd.get("code")||"").toUpperCase().replace(/\s+/g,"");
     if(!raw) return;
     const k = S.users.find(u=>u.role==="child" && (u.accessCode||"").toUpperCase()===raw);
-    if(k){ ACTIONS.signIn(k.id); toast("Welcome back, "+k.name.split(" ")[0]+"! 🎉"); }
+    if(k && childPending(k)){ toast(k.name.split(" ")[0]+"'s account is still awaiting academy approval — hang tight!"); form.reset(); }
+    else if(k){ ACTIONS.signIn(k.id); toast("Welcome back, "+k.name.split(" ")[0]+"! 🎉"); }
     else { toast("Code not recognised — ask your parent to check it under My children."); form.reset(); }
   },
   addChild(fd){
@@ -1713,9 +1756,9 @@ const FORMS = {
     const me=user(getSess().userId);
     let code;
     commit(()=>{ code = makeCode(name);
-      S.users.push({id:uid("c"), role:"child", parentId:me.id, name, age, accessCode:code});
-      addEvent("👧", me.name+" added a new child: "+name+".", ["admin"], []); });
-    toast(name+" has been added — their sign-in code is "+code+".");
+      S.users.push({id:uid("c"), role:"child", parentId:me.id, name, age, accessCode:code, status:"pending"});
+      addEvent("👧", me.name+" added a new child: "+name+" — awaiting your approval (Users → Students).", ["admin"], []); });
+    toast(name+" has been added and sent to the academy for approval. You'll be notified once they're approved.");
   },
   pay(fd, form){
     const crsId = form.dataset.course; const childId = fd.get("childId");
@@ -1803,7 +1846,7 @@ const FORMS = {
     const name = (fd.get("name")||"").trim(); if(!name) return;
     commit(()=>{
       if(role==="child"){
-        S.users.push({id:uid("c"), role:"child", parentId:fd.get("parentId"), name, age:Number(fd.get("age"))||8, accessCode:makeCode(name)});
+        S.users.push({id:uid("c"), role:"child", parentId:fd.get("parentId"), name, age:Number(fd.get("age"))||8, accessCode:makeCode(name), status:"active"});
       } else if(role==="teacher"){
         S.users.push({id:uid("t"), role:"teacher", name, email:(fd.get("email")||"").trim(), subjects:(fd.get("subjects")||"").trim(), bio:(fd.get("bio")||"").trim(), status:"active"});
       } else {
