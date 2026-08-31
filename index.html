@@ -367,7 +367,25 @@ function seedState(){
       {id:"rs3", examId:"exs", childId:"c2", marks:72, teacherId:"t4", ts:now-17*DAY},
       {id:"rs4", examId:"ex0", childId:"c4", marks:64, teacherId:"t1", ts:now-19*DAY}
     ],
-    complaints: [],
+    complaints: [
+      {id:"cm1", parentId:"p2", subject:"Saturday timing", text:"Could Science Explorers ever run in the afternoon instead of 10 AM?", ts:now-5*DAY, status:"in_progress", reply:"We're polling other families — we'll confirm by next week.", updatedAt:now-3*DAY}
+    ],
+    dues: (()=>{
+      const per = new Date().toLocaleDateString(undefined,{month:"short",year:"numeric"});
+      return [
+        {id:"du1", childId:"c1", courseId:"crs1", parentId:"p1", period:per, amount:120, status:"paid", paidTs:now-3*DAY},
+        {id:"du2", childId:"c1", courseId:"crs2", parentId:"p1", period:per, amount:150, status:"due"},
+        {id:"du3", childId:"c2", courseId:"crs5", parentId:"p1", period:per, amount:130, status:"due"},
+        {id:"du4", childId:"c3", courseId:"crs3", parentId:"p2", period:per, amount:90,  status:"paid", paidTs:now-2*DAY},
+        {id:"du5", childId:"c4", courseId:"crs4", parentId:"p3", period:per, amount:110, status:"due"},
+        {id:"du6", childId:"c5", courseId:"crs6", parentId:"p3", period:per, amount:140, status:"paid", paidTs:now-1*DAY},
+        {id:"du7", childId:"c4", courseId:"crs1", parentId:"p3", period:per, amount:120, status:"due"}
+      ];
+    })(),
+    homework: [
+      {id:"hw1", courseId:"crs1", teacherId:"t1", title:"Fractions worksheet p.12", details:"Questions 1–10, show your working.", dueDate:new Date(now+3*DAY).toISOString().slice(0,10), ts:now-2*DAY, done:["c1"]},
+      {id:"hw2", courseId:"crs3", teacherId:"t3", title:"Story draft: “An unexpected door”", details:"300 words, bring a printed copy.", dueDate:new Date(now+2*DAY).toISOString().slice(0,10), ts:now-1*DAY, done:[]}
+    ],
     events: [
       {id:"ev1", ts:now-2*DAY, icon:"⭐", text:"New review from Sarah Ahmed is awaiting approval (Beginner Piano).", roles:["admin"], userIds:[]}
     ]
@@ -377,7 +395,7 @@ function seedState(){
 let S = null;
 function loadState(){
   try{ const raw = localStorage.getItem(LS_KEY); if(raw){ const st = JSON.parse(raw);
-    ["attendance","exams","results","complaints","payouts"].forEach(k=>{ st[k] = st[k] || []; });
+    ["attendance","exams","results","complaints","payouts","dues","homework"].forEach(k=>{ st[k] = st[k] || []; });
     st.invSeq = st.invSeq || 1008;
     return st; } }catch(e){}
   return null;
@@ -438,7 +456,7 @@ async function pollCloud(){
     else if((row.version||0) > (S.version||0)){
       const prevIds = new Set(S.events.map(ev=>ev.id));
       S = row.state; S.version = row.version;
-      ["attendance","exams","results","complaints","payouts"].forEach(k=>{ S[k]=S[k]||[]; });
+      ["attendance","exams","results","complaints","payouts","dues","homework"].forEach(k=>{ S[k]=S[k]||[]; });
       try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(e){}
       const sess = getSess();
       S.events.filter(ev=>!prevIds.has(ev.id) && eventFor(ev,sess)).slice(0,3).reverse().forEach(ev=>toast(ev.icon+" "+ev.text));
@@ -479,7 +497,8 @@ const ICONS = {
   clip:'<path d="M9 3h6a1 1 0 0 1 1 1v2H8V4a1 1 0 0 1 1-1z"/><path d="M16 4.5h3a1 1 0 0 1 1 1V21a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5.5a1 1 0 0 1 1-1h3"/><path d="m9 13.5 2 2 4-4"/>',
   file:'<path d="M14 2.5H6a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-11z"/><polyline points="14 2.5 14 8.5 20 8.5"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
   award:'<circle cx="12" cy="8.5" r="5.5"/><path d="M15.4 13 17 22l-5-3-5 3 1.6-9"/>',
-  message:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'
+  message:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+  pencil:'<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>'
 };
 const icon = n => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]||""}</svg>`;
 const cdot = c => `<span class="cdot">${esc(((c&&c.subject)||"C")[0])}</span>`;
@@ -510,8 +529,10 @@ function attSummary(list){
 const ATT_CHIP = {present:'<span class="chip chip-good">Present</span>', late:'<span class="chip chip-warn">Late</span>', absent:'<span class="chip chip-bad">Absent</span>'};
 function gradeOf(m){ return m>=85?"A":m>=70?"B":m>=55?"C":m>=40?"D":"F"; }
 function gradeChip(m){ const g=gradeOf(m); const cls = g==="A"||g==="B" ? "chip-good" : g==="F" ? "chip-bad" : "chip-warn"; return `<span class="chip ${cls}">${g}</span>`; }
-const CMP_LABEL = {open:"Open", in_progress:"In progress", resolved:"Resolved"};
+const CMP_LABEL = {open:"New", in_progress:"In progress", resolved:"Answered"};
 const CMP_CHIP  = {open:"chip-warn", in_progress:"chip-accent", resolved:"chip-good"};
+const periodNow = () => new Date().toLocaleDateString(undefined,{month:"short",year:"numeric"});
+const duesOutstanding = pid => (S.dues||[]).filter(d=>d.status==="due" && (!pid || d.parentId===pid));
 const exam = id => (S.exams||[]).find(e=>e.id===id);
 const childPending = k => !!k && k.role==="child" && k.status==="pending";
 const teacherRevenue = tid => S.payments.filter(p=>p.status==="paid" && (course(p.courseId)||{}).teacherId===tid).reduce((a,p)=>a+p.amount,0);
@@ -561,10 +582,10 @@ function toast(msg){
 
 /* ============================ shell ============================== */
 const NAV = {
-  parent:  [["dashboard","home","Home"],["browse","search","Classes"],["children","users","My children"],["schedule","calendar","Timetable"],["payments","card","Payments"],["results","award","Results"],["exams","file","Exams"],["notifications","bell","Notifications"],["profile","user","Profile"]],
-  child:   [["dashboard","home","Home"],["myclasses","book","My classes"],["schedule","calendar","Schedule"],["results","award","Results"],["exams","file","Exams"],["progress","star","Progress"],["notifications","bell","Notifications"],["profile","user","Profile"]],
-  teacher: [["dashboard","home","Home"],["classes","book","My classes"],["students","grad","Students"],["attendance","clip","Attendance"],["results","award","Results"],["exams","file","Exams"],["schedule","calendar","Schedule"],["notifications","bell","Notifications"],["profile","user","Profile"]],
-  admin:   [["dashboard","home","Home"],["users","users","Users"],["courses","book","Classes"],["payments","card","Payments"],["attendance","clip","Attendance"],["exams","file","Exams"],["reviews","star","Reviews"],["reports","chart","Reports"],["notifications","bell","Notifications"]]
+  parent:  [["dashboard","home","Home"],["browse","search","Classes"],["children","users","My children"],["schedule","calendar","Timetable"],["payments","card","Payments"],["results","award","Results"],["exams","file","Exams"],["complaints","message","Messages"],["notifications","bell","Notifications"],["profile","user","Profile"]],
+  child:   [["dashboard","home","Home"],["myclasses","book","My classes"],["homework","pencil","Homework"],["schedule","calendar","Schedule"],["results","award","Results"],["exams","file","Exams"],["progress","star","Progress"],["notifications","bell","Notifications"],["profile","user","Profile"]],
+  teacher: [["dashboard","home","Home"],["classes","book","My classes"],["students","grad","Students"],["attendance","clip","Attendance"],["homework","pencil","Homework"],["results","award","Results"],["exams","file","Exams"],["schedule","calendar","Schedule"],["notifications","bell","Notifications"],["profile","user","Profile"]],
+  admin:   [["dashboard","home","Home"],["users","users","Users"],["courses","book","Classes"],["payments","card","Payments"],["attendance","clip","Attendance"],["exams","file","Exams"],["reviews","star","Reviews"],["complaints","message","Inbox"],["reports","chart","Reports"],["notifications","bell","Notifications"]]
 };
 const ROLE_LABEL = {admin:"Admin", teacher:"Teacher", parent:"Parent", child:"Student"};
 const ROLE_CHIP  = {admin:"chip-accent", teacher:"chip-primary", parent:"chip-good", child:"chip-warn"};
@@ -703,7 +724,17 @@ function courseCard(c, actions){
 VIEWS["parent/dashboard"] = me => {
   const kids = childrenOf(me.id);
   const feed = S.progress.filter(p=>kids.some(k=>k.id===p.childId)).sort((a,b)=>b.ts-a.ts).slice(0,4);
+  const owed = duesOutstanding(me.id);
+  const owedTotal = owed.reduce((a,d)=>a+d.amount,0);
   return pageHead(`Welcome back, ${esc(me.name.split(" ")[0])}`, "Here’s how your family is doing this week.") + `
+  ${owed.length?`<div class="card card-pad" style="border-left:4px solid var(--warn);margin-bottom:18px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <b>Outstanding fees · ${esc(periodNow())}</b>
+      <span class="price num" style="font-size:20px">${money(owedTotal)}</span>
+    </div>
+    <div class="small muted" style="margin-top:5px">${owed.map(d=>esc(((user(d.childId)||{}).name||"").split(" ")[0])+" — "+esc((course(d.courseId)||{}).title||"")+" ("+money(d.amount)+")").join(" · ")}</div>
+    <div class="tiny muted" style="margin-top:7px">Payable at the academy office — this updates automatically the moment they record your payment.</div>
+  </div>`:""}
   <div class="grid2">
     ${kids.map(k=>{
       const crs = childCourses(k.id);
@@ -835,6 +866,13 @@ VIEWS["parent/childview"] = (me, sess) => {
       <tbody>${att.slice(0,6).map(a=>`<tr><td class="num">${fmtDateStr(a.date)}</td><td>${esc((course(a.courseId)||{}).title||"—")}</td><td>${ATT_CHIP[a.status]||""}</td></tr>`).join("")}</tbody>
     </table></div>`:`<div class="empty">No attendance records yet — they appear as soon as a teacher takes the register.</div>`}
   </div>
+  ${(()=>{ const crsIds = childCourses(k.id).map(c=>c.id);
+    const hws = (S.homework||[]).filter(h=>crsIds.includes(h.courseId)).sort((a,b)=>a.dueDate<b.dueDate?-1:1);
+    return hws.length?`<div class="card card-pad" style="max-width:720px;margin-bottom:18px">
+      <h2 style="font-size:17px;margin-bottom:8px">Homework</h2>
+      ${hws.map(h=>{ const c=course(h.courseId)||{}; const done=h.done.includes(k.id);
+        return `<div class="list-row"><div class="grow small"><b>${esc(h.title)}</b><div class="tiny muted">${esc(c.title||"")} · due ${fmtDateStr(h.dueDate)}</div></div>${done?'<span class="chip chip-good">Done</span>':'<span class="chip chip-warn">To do</span>'}</div>`; }).join("")}
+    </div>`:""; })()}
   <div class="card card-pad" style="max-width:720px">
     <h2 style="font-size:17px;margin-bottom:14px">Progress timeline</h2>
     ${prog.length?`<div class="timeline">${prog.map(p=>{
@@ -864,7 +902,14 @@ VIEWS["parent/schedule"] = (me, sess) => {
 VIEWS["parent/payments"] = me => {
   const rows = S.payments.filter(p=>p.parentId===me.id).sort((a,b)=>b.ts-a.ts);
   const total = rows.filter(p=>p.status==="paid").reduce((a,p)=>a+p.amount,0);
+  const owed = duesOutstanding(me.id);
   return pageHead("Payments", `You’ve paid ${money(total)} in total. All payments in this demo are simulated.`) + `
+  ${owed.length?`<h2 class="section-title" style="margin-top:0">Outstanding <span class="chip chip-warn">${money(owed.reduce((a,d)=>a+d.amount,0))}</span></h2>
+  <div class="card tablewrap" style="margin-bottom:18px"><table>
+    <thead><tr><th>Period</th><th>Child</th><th>Class</th><th>Amount</th><th>Status</th></tr></thead>
+    <tbody>${owed.map(d=>`<tr><td class="num">${esc(d.period)}</td><td>${esc((user(d.childId)||{}).name||"—")}</td><td>${esc((course(d.courseId)||{}).title||"—")}</td><td class="num"><b>${money(d.amount)}</b></td><td><span class="chip chip-warn">Due</span></td></tr>`).join("")}</tbody>
+  </table></div>
+  <h2 class="section-title">Payment history</h2>`:""}
   <div class="card tablewrap"><table>
     <thead><tr><th>Invoice</th><th>Date</th><th>Class</th><th>Child</th><th>Amount</th><th>Status</th><th></th></tr></thead>
     <tbody>${rows.map(p=>`<tr>
@@ -1034,6 +1079,50 @@ VIEWS["teacher/attendance"] = (me, sess) => {
   <p class="tiny muted" style="margin-top:10px">${marked} of ${roster.length} marked for ${fmtDateStr(date)}. Changes save instantly and appear on parent, student and admin views.</p>`;
 };
 
+VIEWS["teacher/homework"] = me => {
+  const crs = coursesOfTeacher(me.id);
+  if(!crs.length) return pageHead("Homework","") + `<div class="empty">No classes assigned yet.</div>`;
+  const list = (S.homework||[]).filter(h=>crs.some(c=>c.id===h.courseId)).sort((a,b)=>b.ts-a.ts);
+  return pageHead("Homework","Assign homework, then tick students off as they hand it in. Families see everything instantly.") + `
+  <div class="split-main">
+    <div>${list.map(h=>{
+      const c = course(h.courseId)||{}; const roster = rosterForCourse(h.courseId);
+      return `<div class="card card-pad" style="margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
+          <div><b>${esc(h.title)}</b><div class="tiny muted">${esc(c.title||"")} · due ${fmtDateStr(h.dueDate)}</div></div>
+          <span class="chip ${roster.length&&h.done.length===roster.length?"chip-good":"chip-muted"}">${h.done.length}/${roster.length} done</span>
+        </div>
+        ${h.details?`<div class="small muted" style="margin-top:6px">${esc(h.details)}</div>`:""}
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+          ${roster.map(e=>{ const k=user(e.childId); const done=h.done.includes(e.childId);
+            return `<button class="btn btn-sm ${done?"btn-good":"btn-ghost"}" data-act="hwToggle" data-arg="${h.id}|${e.childId}">${done?"✓ ":""}${esc(k?k.name.split(" ")[0]:"")}</button>`; }).join("")||`<span class="tiny muted">No students enrolled.</span>`}
+        </div>
+      </div>`;
+    }).join("")||`<div class="empty">No homework assigned yet.</div>`}</div>
+    <div class="card card-pad">
+      <h3 style="font-size:16px;margin-bottom:12px">Assign homework</h3>
+      <form data-form="homework">
+        <div class="field"><label>Class</label><select name="courseId">${crs.map(c=>`<option value="${c.id}">${esc(c.title)}</option>`).join("")}</select></div>
+        <div class="field"><label>Title</label><input name="title" required placeholder="e.g. Worksheet p.12"></div>
+        <div class="field"><label>Details</label><textarea name="details" rows="3" placeholder="What exactly should they do?"></textarea></div>
+        <div class="field"><label>Due date</label><input name="dueDate" type="date" required></div>
+        <button class="btn btn-primary" type="submit">Assign to class</button>
+      </form>
+    </div>
+  </div>`;
+};
+
+VIEWS["child/homework"] = me => {
+  const crsIds = childCourses(me.id).map(c=>c.id);
+  const list = (S.homework||[]).filter(h=>crsIds.includes(h.courseId)).sort((a,b)=>a.dueDate<b.dueDate?-1:1);
+  return pageHead("My homework","Your teacher ticks these off when you hand them in.") + `
+  <div class="card card-pad" style="max-width:720px">
+    ${list.length?list.map(h=>{ const c=course(h.courseId)||{}; const done=h.done.includes(me.id);
+      return `<div class="list-row">${cdot(c)}<div class="grow"><b class="small">${esc(h.title)}</b><div class="tiny muted">${esc(c.title||"")} · due ${fmtDateStr(h.dueDate)}</div>${h.details?`<div class="small muted">${esc(h.details)}</div>`:""}</div>${done?'<span class="chip chip-good">Done</span>':'<span class="chip chip-warn">To do</span>'}</div>`;
+    }).join(""):`<div class="empty">No homework right now. 🎉</div>`}
+  </div>`;
+};
+
 VIEWS["teacher/schedule"] = me => pageHead("My week","") + scheduleView(coursesOfTeacher(me.id));
 
 VIEWS["teacher/profile"] = me => {
@@ -1082,13 +1171,14 @@ VIEWS["admin/dashboard"] = me => {
   const pendingRevs = S.reviews.filter(r=>r.status==="pending").length;
   const pendingTeachers = S.users.filter(u=>u.role==="teacher"&&u.status==="pending").length;
   const pendingKids = S.users.filter(u=>childPending(u)).length;
+  const openMsgs = (S.complaints||[]).filter(c=>c.status!=="resolved").length;
   const activity = S.events.slice(0,6);
   return pageHead("Academy overview", "Everything happening across Brightway, live.") + `
   <div class="stat-row">
     ${statCard("dollar","Revenue · this month",money(thisMonth))}
     ${statCard("grad","Active enrolments",S.enrollments.length,students+" students")}
     ${statCard("book","Classes",S.courses.filter(c=>c.status==="active").length,S.users.filter(u=>u.role==="teacher"&&u.status==="active").length+" active teachers")}
-    ${statCard("alert","Needs attention",pendingRevs+pendingTeachers+pendingKids,pendingRevs+" review"+(pendingRevs===1?"":"s")+" · "+pendingTeachers+" teacher"+(pendingTeachers===1?"":"s")+" · "+pendingKids+" student"+(pendingKids===1?"":"s"))}
+    ${statCard("alert","Needs attention",pendingRevs+pendingTeachers+pendingKids+openMsgs,pendingRevs+" review"+(pendingRevs===1?"":"s")+" · "+pendingTeachers+" teacher"+(pendingTeachers===1?"":"s")+" · "+pendingKids+" student"+(pendingKids===1?"":"s")+" · "+openMsgs+" message"+(openMsgs===1?"":"s"))}
   </div>
   <div class="grid2">
     <div class="card card-pad">
@@ -1182,6 +1272,18 @@ VIEWS["admin/payments"] = me => {
       <td>${p.status==="paid"?`<span class="chip chip-good">Paid</span>`:`<span class="chip chip-bad">Refunded</span>`}</td>
       <td><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" data-act="invoice" data-arg="${p.id}">Invoice</button>${p.status==="paid"?`<button class="btn btn-ghost btn-sm" data-act="refund" data-arg="${p.id}">Refund</button>`:""}</div></td>
     </tr>`).join("")}</tbody>
+  </table></div>
+  <h2 class="section-title">Outstanding fees ${duesOutstanding().length?`<span class="chip chip-warn">${money(duesOutstanding().reduce((a,d)=>a+d.amount,0))} owed</span>`:""} <button class="btn btn-ghost btn-sm" data-act="genDues">Generate ${esc(periodNow())} dues</button></h2>
+  <div class="card tablewrap" style="margin-bottom:18px"><table>
+    <thead><tr><th>Period</th><th>Parent</th><th>Child</th><th>Class</th><th>Amount</th><th></th></tr></thead>
+    <tbody>${duesOutstanding().map(d=>`<tr>
+      <td class="num">${esc(d.period)}</td>
+      <td><b>${esc((user(d.parentId)||{}).name||"—")}</b></td>
+      <td class="muted">${esc((user(d.childId)||{}).name||"—")}</td>
+      <td>${esc((course(d.courseId)||{}).title||"—")}</td>
+      <td class="num"><b>${money(d.amount)}</b></td>
+      <td><button class="btn btn-primary btn-sm" data-act="markDuePaid" data-arg="${d.id}">Mark paid</button></td>
+    </tr>`).join("")||`<tr><td colspan="6"><div class="empty">No outstanding fees. 🎉 Use “Generate dues” to bill the current month.</div></td></tr>`}</tbody>
   </table></div>
   <h2 class="section-title">Teacher payouts <button class="btn btn-primary btn-sm" data-act="openPayout">＋ Record payout</button></h2>
   <div class="card tablewrap" style="margin-bottom:18px"><table>
@@ -1444,19 +1546,19 @@ function complaintCard(cm, showParent){
 }
 VIEWS["parent/complaints"] = me => {
   const mine = (S.complaints||[]).filter(c=>c.parentId===me.id).sort((a,b)=>b.ts-a.ts);
-  return pageHead("Complaints & feedback","Raise anything with the academy — you'll be notified when they respond.") + `
+  return pageHead("Messages","Ask the academy office anything — you'll be notified the moment they reply.") + `
   <div class="grid2" style="align-items:start">
     <div class="card card-pad">
-      <h3 style="font-size:16px;margin-bottom:12px">New complaint</h3>
+      <h3 style="font-size:16px;margin-bottom:12px">New message</h3>
       <form data-form="complaint">
-        <div class="field"><label>Subject</label><input name="subject" required placeholder="e.g. Class timing"></div>
-        <div class="field"><label>Details</label><textarea name="text" rows="4" required placeholder="Tell us what happened and what you'd like us to do."></textarea></div>
-        <button class="btn btn-primary" type="submit">Submit to academy</button>
+        <div class="field"><label>Subject</label><input name="subject" required placeholder="e.g. Fee question, schedule request…"></div>
+        <div class="field"><label>Message</label><textarea name="text" rows="4" required placeholder="What would you like to ask the academy?"></textarea></div>
+        <button class="btn btn-primary" type="submit">Send to academy office</button>
       </form>
     </div>
     <div class="card card-pad">
-      <h3 style="font-size:16px;margin-bottom:6px">Your complaints</h3>
-      ${mine.length?mine.map(cm=>complaintCard(cm,false)).join(""):`<div class="empty">Nothing raised yet.</div>`}
+      <h3 style="font-size:16px;margin-bottom:6px">Your messages</h3>
+      ${mine.length?mine.map(cm=>complaintCard(cm,false)).join(""):`<div class="empty">No messages yet.</div>`}
     </div>
   </div>`;
 };
@@ -1464,11 +1566,11 @@ VIEWS["admin/complaints"] = me => {
   const open = (S.complaints||[]).filter(c=>c.status!=="resolved").sort((a,b)=>b.ts-a.ts);
   const done = (S.complaints||[]).filter(c=>c.status==="resolved").sort((a,b)=>b.ts-a.ts);
   const withBtn = cm => complaintCard(cm,true).replace('</div></div>', `</div><button class="btn btn-ghost btn-sm" data-act="openRespond" data-arg="${cm.id}" style="align-self:flex-start">Respond</button></div>`);
-  return pageHead("Complaints","Respond and resolve — the parent is notified immediately.") + `
-  <h2 class="section-title">Needs a response ${open.length?`<span class="chip chip-warn">${open.length}</span>`:""}</h2>
+  return pageHead("Inbox","Messages from parents — reply and they're notified immediately.") + `
+  <h2 class="section-title">Needs a reply ${open.length?`<span class="chip chip-warn">${open.length}</span>`:""}</h2>
   <div class="card card-pad">${open.length?open.map(withBtn).join(""):`<div class="empty">All clear. 🎉</div>`}</div>
-  <h2 class="section-title">Resolved</h2>
-  <div class="card card-pad">${done.length?done.map(cm=>complaintCard(cm,true)).join(""):`<div class="empty">None resolved yet.</div>`}</div>`;
+  <h2 class="section-title">Answered</h2>
+  <div class="card card-pad">${done.length?done.map(cm=>complaintCard(cm,true)).join(""):`<div class="empty">None answered yet.</div>`}</div>`;
 };
 
 /* ============================ modals ============================= */
@@ -1648,7 +1750,7 @@ function recordPayModal(){
 
 function respondModal(cmId){
   const cm = (S.complaints||[]).find(x=>x.id===cmId); if(!cm) return;
-  openModal(modalHead("Respond to complaint") + `<div class="modal-body">
+  openModal(modalHead("Reply to message") + `<div class="modal-body">
     <div class="small" style="margin-bottom:12px"><b>${esc(cm.subject)}</b><div class="muted">${esc(cm.text)}</div><div class="tiny" style="color:var(--ink3);margin-top:3px">${esc((user(cm.parentId)||{}).name||"")}</div></div>
     <form data-form="respondComplaint" data-cm="${cm.id}">
       <div class="field"><label>Status</label>
@@ -1727,6 +1829,41 @@ const ACTIONS = {
     toast("New code for "+k.name.split(" ")[0]+": "+k.accessCode);
   },
   attClass(id){ setSess({attClass:id}); render(); },
+  genDues(){
+    const per = periodNow();
+    let made = 0; const byParent = {};
+    commit(()=>{
+      S.dues = S.dues || [];
+      S.enrollments.forEach(e=>{
+        const c = course(e.courseId), k = user(e.childId);
+        if(!c || c.status!=="active" || !k || childPending(k)) return;
+        if(S.dues.some(d=>d.childId===e.childId && d.courseId===e.courseId && d.period===per)) return;
+        S.dues.push({id:uid("du"), childId:e.childId, courseId:e.courseId, parentId:e.parentId, period:per, amount:c.price, status:"due"});
+        made++; byParent[e.parentId] = (byParent[e.parentId]||0) + c.price;
+      });
+      Object.entries(byParent).forEach(([pid,total])=>addEvent("🧾","School fees for "+per+": "+money(total)+" now due. Payable at the academy office.",[],[pid]));
+    });
+    toast(made ? made+" fee item"+(made===1?"":"s")+" generated for "+per+" — families notified." : "All "+per+" dues already exist.");
+  },
+  markDuePaid(id){
+    const d = (S.dues||[]).find(x=>x.id===id); if(!d || d.status!=="due") return;
+    const k = user(d.childId), c = course(d.courseId);
+    commit(()=>{
+      d.status = "paid"; d.paidTs = Date.now();
+      S.invSeq = S.invSeq || 1008;
+      S.payments.push({id:uid("pay"), invoiceNo:"INV-"+(S.invSeq++), ts:Date.now(), parentId:d.parentId, childId:d.childId, courseId:d.courseId, amount:d.amount, method:"Recorded at office", status:"paid"});
+      addEvent("💳","Payment received: "+money(d.amount)+" for "+((c||{}).title||"a class")+" ("+((k||{}).name||"")+") — "+d.period+". Thank you!",[],[d.parentId]);
+    });
+    toast("Marked paid — invoice issued and "+((user(d.parentId)||{}).name||"the parent")+" notified.");
+  },
+  hwToggle(arg){
+    const [hwId, childId] = arg.split("|");
+    const h = (S.homework||[]).find(x=>x.id===hwId); if(!h) return;
+    commit(()=>{
+      const i = h.done.indexOf(childId);
+      if(i>=0) h.done.splice(i,1); else h.done.push(childId);
+    });
+  },
   resExam(id){ setSess({resExam:id}); render(); },
   adAttClass(id){ setSess({adAttClass:id}); render(); },
   invoice(id){ invoiceModal(id); },
@@ -1859,6 +1996,20 @@ const FORMS = {
     closeModal();
     toast("Update posted — "+((user(k.parentId)||{}).name||"the parent")+" and "+k.name.split(" ")[0]+" can see it now.");
   },
+  homework(fd, form){
+    const me = user(getSess().userId);
+    const c = course(fd.get("courseId"));
+    const title = (fd.get("title")||"").trim();
+    if(!c || !title || !fd.get("dueDate")) return;
+    commit(()=>{
+      S.homework = S.homework || [];
+      S.homework.push({id:uid("hw"), courseId:c.id, teacherId:me.id, title, details:(fd.get("details")||"").trim(), dueDate:fd.get("dueDate"), ts:Date.now(), done:[]});
+      const fam = [...new Set(rosterForCourse(c.id).flatMap(e=>[e.childId, e.parentId]))];
+      addEvent("📚","New homework for "+c.title+": “"+title+"” (due "+fmtDateStr(fd.get("dueDate"))+").",[],fam);
+    });
+    form.reset();
+    toast("Homework assigned — students and parents notified.");
+  },
   saveProfile(fd){
     const me=user(getSess().userId);
     commit(()=>{
@@ -1874,16 +2025,16 @@ const FORMS = {
     commit(()=>{
       S.complaints = S.complaints || [];
       S.complaints.push({id:uid("cm"), parentId:me.id, subject, text, ts:Date.now(), status:"open", reply:"", updatedAt:Date.now()});
-      addEvent("📨","New complaint from "+me.name+": “"+subject+"”.",["admin"],[]);
+      addEvent("📨","New message from "+me.name+": “"+subject+"”.",["admin"],[]);
     });
-    toast("Sent to the academy. You'll be notified when they respond.");
+    toast("Sent to the academy office. You'll be notified when they reply.");
   },
   respondComplaint(fd, form){
     const cm=(S.complaints||[]).find(x=>x.id===form.dataset.cm); if(!cm) return;
     const status=fd.get("status")||cm.status, reply=(fd.get("reply")||"").trim();
     commit(()=>{
       cm.status=status; cm.reply=reply; cm.updatedAt=Date.now();
-      addEvent("📨","Update on your complaint “"+cm.subject+"”: "+(CMP_LABEL[status]||status)+(reply?" — “"+reply.slice(0,80)+(reply.length>80?"…":"")+"”":"")+".",[],[cm.parentId]);
+      addEvent("📨","Academy reply on “"+cm.subject+"”: "+(CMP_LABEL[status]||status)+(reply?" — “"+reply.slice(0,80)+(reply.length>80?"…":"")+"”":"")+".",[],[cm.parentId]);
     });
     closeModal();
     toast("Response sent to "+((user(cm.parentId)||{}).name||"the parent")+".");
