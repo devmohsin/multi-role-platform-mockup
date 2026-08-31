@@ -1,0 +1,1872 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brightway Academy</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --bg:#F4F5F7; --surface:#FFFFFF; --surface2:#EEF0F4; --ink:#1A2333; --ink2:#5C6575; --ink3:#8B93A3;
+    --line:#E4E7EC; --line2:#D3D8E0;
+    --primary:#D7262F; --primary-hover:#B31D26; --primary-ink:#FFFFFF; --primary-soft:#FBE9EA; --primary-soft-ink:#A5121F;
+    --navy:#13203F; --navy-ink:#FFFFFF;
+    --accent:#A87F24; --accent-soft:#F5EDDA; --accent-ink:#7C5E13;
+    --good:#25754A; --good-soft:#E0F0E6; --warn:#9E620E; --warn-soft:#F7EDD8; --bad:#7E3B2E; --bad-soft:#F4E6E0;
+    --hero:#101B38;
+    --shadow:0 1px 2px rgba(26,35,51,.05),0 3px 12px rgba(26,35,51,.06);
+    --shadow-lg:0 4px 12px rgba(26,35,51,.10),0 16px 48px rgba(26,35,51,.16);
+    --star:#C9971F;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1524; --surface:#161F33; --surface2:#1F2941; --ink:#E8ECF4; --ink2:#A6AFC2; --ink3:#727C92;
+      --line:#28324B; --line2:#39445F;
+      --primary:#F0666E; --primary-hover:#F4838A; --primary-ink:#26070A; --primary-soft:#3D1E28; --primary-soft-ink:#F5A3A8;
+      --navy:#0C1730; --navy-ink:#E8ECF4;
+      --accent:#D9B15E; --accent-soft:#322A17; --accent-ink:#E7C077;
+      --good:#63B888; --good-soft:#20362A; --warn:#DBA255; --warn-soft:#382E1C; --bad:#DE9A8A; --bad-soft:#3B2622;
+      --hero:#0B142B;
+      --shadow:0 1px 2px rgba(0,0,0,.25),0 4px 16px rgba(0,0,0,.25);
+      --shadow-lg:0 4px 12px rgba(0,0,0,.35),0 16px 48px rgba(0,0,0,.45);
+      --star:#E0AC4C;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#131D1A; --surface:#1B2823; --surface2:#233129; --ink:#E7EDEA; --ink2:#A3B2AC; --ink3:#71807A;
+    --line:#2C3B35; --line2:#3A4A43;
+    --primary:#4FB99E; --primary-hover:#67C9B0; --primary-ink:#0C1F1A; --primary-soft:#1E3831; --primary-soft-ink:#8FD4C2;
+    --accent:#E0AC4C; --accent-soft:#37301C; --accent-ink:#E7C077;
+    --good:#63B888; --good-soft:#20362A; --warn:#DBA255; --warn-soft:#382E1C; --bad:#DE8272; --bad-soft:#3B2622;
+    --shadow:0 1px 2px rgba(0,0,0,.25),0 4px 16px rgba(0,0,0,.25);
+    --shadow-lg:0 4px 12px rgba(0,0,0,.35),0 16px 48px rgba(0,0,0,.45);
+    --star:#E0AC4C;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font:15px/1.55 "Public Sans",system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:"Archivo","Public Sans",sans-serif;font-weight:700;line-height:1.2;margin:0;text-wrap:balance;letter-spacing:-.01em}
+  button{font:inherit;cursor:pointer;border:none;background:none;color:inherit;padding:0}
+  input,select,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line2);border-radius:8px;padding:9px 12px;width:100%}
+  input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible{outline:2px solid var(--primary);outline-offset:1px}
+  a{color:var(--primary)}
+  @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:9px 16px;border-radius:8px;font-weight:600;font-size:14px;border:1px solid transparent;transition:background .15s;font-family:"Archivo","Public Sans",sans-serif;letter-spacing:.01em}
+  .btn-primary{background:var(--primary);color:var(--primary-ink)}
+  .btn-primary:hover{background:var(--primary-hover)}
+  .btn-ghost{border-color:var(--line2);color:var(--ink)}
+  .btn-ghost:hover{background:var(--surface2)}
+  .btn-danger{background:var(--bad-soft);color:var(--bad)}
+  .btn-good{background:var(--good);color:#fff}
+  .btn-warnful{background:var(--warn);color:#fff}
+  .btn-bad{background:var(--bad);color:#fff}
+  .btn-sm{padding:5px 11px;font-size:13px;border-radius:7px}
+  .btn[disabled]{opacity:.55;cursor:default}
+
+  .chip{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:6px;font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+  .chip-primary{background:var(--primary-soft);color:var(--primary-soft-ink)}
+  .chip-accent{background:var(--accent-soft);color:var(--accent-ink)}
+  .chip-good{background:var(--good-soft);color:var(--good)}
+  .chip-warn{background:var(--warn-soft);color:var(--warn)}
+  .chip-bad{background:var(--bad-soft);color:var(--bad)}
+  .chip-muted{background:var(--surface2);color:var(--ink2)}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+  .card-pad{padding:20px}
+  .eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink2)}
+  .muted{color:var(--ink2)} .tiny{font-size:12.5px} .small{font-size:13.5px}
+  .num{font-variant-numeric:tabular-nums}
+  .avatar{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:var(--primary-soft);color:var(--primary-soft-ink);font-weight:700;flex:none}
+  .stars{color:var(--star);letter-spacing:1px;white-space:nowrap}
+
+  /* ------- landing / picker ------- */
+  .brandmark{display:inline-flex;align-items:center;gap:10px;font-family:"Archivo","Public Sans",sans-serif;font-size:20px;font-weight:700}
+  .brandmark .bm-dot{width:30px;height:30px;border-radius:9px;background:var(--primary);color:var(--primary-ink);display:inline-flex;align-items:center;justify-content:center;font-size:15px}
+  .hero{background:var(--hero);color:#F4F2EA;padding:40px 22px 108px;position:relative;overflow:hidden}
+  .hero::before{content:"";position:absolute;left:50%;top:-340px;transform:translateX(-50%);width:900px;height:640px;border-radius:50%;background:radial-gradient(closest-side, rgba(224,172,76,.16), transparent);pointer-events:none}
+  .hero-in{max-width:1080px;margin:0 auto;position:relative;text-align:center}
+  .hero .brandmark{color:#F4F2EA}
+  .hero .bm-dot{background:var(--primary);color:#fff}
+  .masthead{background:#B01823;color:rgba(255,251,248,.9);font-size:11.5px;letter-spacing:.02em;padding:5px 18px;display:flex;gap:7px;align-items:center}
+  .masthead b{color:#F6DFA4;font-weight:700}
+  .ic{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none;display:block}
+  .cdot{width:30px;height:30px;border-radius:8px;background:var(--navy);color:var(--navy-ink);display:inline-flex;align-items:center;justify-content:center;font-family:"Archivo","Public Sans",sans-serif;font-weight:700;font-size:13px;flex:none}
+  .hero h1{font-size:clamp(34px,5vw,54px);margin:36px 0 14px;color:#FDFCF7;letter-spacing:-.02em;font-weight:800}
+  .hero .lede{max-width:56ch;margin:0 auto;color:rgba(244,242,234,.78);font-size:16px}
+  .hero-stats{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:26px}
+  .hero-stat{background:rgba(244,242,234,.09);border:1px solid rgba(244,242,234,.18);border-radius:99px;padding:7px 16px;font-size:13px;font-weight:600;color:#F4F2EA}
+  .hero-stat b{color:#EFC878}
+  .demo-note{display:inline-flex;gap:9px;align-items:flex-start;text-align:left;background:rgba(224,172,76,.13);border:1px solid rgba(224,172,76,.34);color:#EFD9A8;border-radius:12px;padding:11px 16px;font-size:13px;max-width:660px;margin-top:26px;line-height:1.5}
+  .demo-note b{color:#F6E3B8}
+  .picker-body{max-width:1080px;margin:-64px auto 0;padding:0 22px;position:relative}
+  .role-grid{display:grid;grid-template-columns:1fr;gap:16px}
+  @media (min-width:640px){.role-grid{grid-template-columns:1fr 1fr}}
+  @media (min-width:1060px){.role-grid{grid-template-columns:repeat(4,1fr)}}
+  .role-panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-lg);overflow:hidden;display:flex;flex-direction:column}
+  .role-head{display:flex;align-items:center;gap:13px;padding:16px 18px 14px;border-bottom:1px solid var(--line)}
+  .role-head .role-ico{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}
+  .role-head h3{font-size:17px}
+  .role-head p{margin:1px 0 0;font-size:12px;color:var(--ink2)}
+  .role-panel .personas{padding:8px;display:flex;flex-direction:column;gap:2px;flex:1}
+  .persona{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border-radius:11px;padding:10px 12px;transition:background .12s}
+  .persona:hover{background:var(--surface2)}
+  .persona .avatar{width:38px;height:38px;font-size:13.5px}
+  .persona b{display:block;font-size:14px}
+  .persona .meta{display:block;font-size:12px;color:var(--ink2)}
+  .persona .go{margin-left:auto;font-size:15px;font-weight:700;color:var(--ink3);opacity:.5;transition:opacity .12s,color .12s;flex:none}
+  .persona:hover .go,.persona:focus-visible .go{opacity:1;color:var(--primary)}
+  .rp-admin .role-ico{background:var(--accent-soft);color:var(--accent-ink)}   .rp-admin .avatar{background:var(--accent-soft);color:var(--accent-ink)}
+  .rp-teacher .role-ico{background:var(--primary-soft);color:var(--primary-soft-ink)}
+  .rp-parent .role-ico{background:var(--good-soft);color:var(--good)}    .rp-parent .avatar{background:var(--good-soft);color:var(--good)}
+  .rp-student .role-ico{background:var(--warn-soft);color:var(--warn)}   .rp-student .avatar{background:var(--warn-soft);color:var(--warn)}
+  .picker-foot{text-align:center;margin:34px 0 40px;color:var(--ink2)}
+  @media (max-width:520px){.hero{padding-bottom:92px}.hero h1{margin-top:28px}}
+
+  /* ------- app shell ------- */
+  .topbar{position:sticky;top:0;z-index:40;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:10px 18px}
+  .topbar .brandmark{font-size:16px}
+  .topbar .bm-dot{width:26px;height:26px;font-size:13px}
+  .role-pill{margin-left:2px}
+  .topbar-spacer{flex:1}
+  .iconbtn{position:relative;width:36px;height:36px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;font-size:17px;border:1px solid var(--line)}
+  .iconbtn:hover{background:var(--surface2)}
+  .badge{position:absolute;top:-5px;right:-5px;background:var(--bad);color:#fff;border-radius:99px;font-size:10.5px;font-weight:700;min-width:17px;height:17px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+  .whoami{display:flex;align-items:center;gap:9px}
+  .whoami .avatar{width:32px;height:32px;font-size:12.5px}
+  .whoami .who-name{font-size:13px;font-weight:600;line-height:1.15}
+  .whoami .who-role{font-size:11px;color:var(--ink2)}
+  .layout{display:flex;min-height:calc(100vh - 57px)}
+  .sidenav{width:212px;flex:none;padding:18px 12px;border-right:1px solid var(--line)}
+  .sidenav button{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:9px 12px;border-radius:9px;font-weight:500;font-size:14px;color:var(--ink2);margin-bottom:2px}
+  .sidenav button:hover{background:var(--surface2)}
+  .sidenav button.on{background:var(--surface2);color:var(--ink);font-weight:600;box-shadow:inset 3px 0 0 var(--primary)}
+  .sidenav button .ic{width:18px;height:18px;color:var(--ink3)}
+  .sidenav button.on .ic{color:var(--primary)}
+  .main{flex:1;min-width:0;padding:26px clamp(16px,3.5vw,40px) 90px;max-width:1120px}
+  .page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+  .page-head h1{font-size:clamp(22px,3vw,28px)}
+  .page-head .sub{color:var(--ink2);font-size:13.5px;margin-top:5px}
+  .bottomnav{display:none}
+  @media (max-width:880px){
+    .sidenav{display:none}
+    .main{padding-bottom:110px}
+    .bottomnav{position:fixed;bottom:0;left:0;right:0;z-index:40;display:flex;background:var(--surface);border-top:1px solid var(--line);padding:5px 4px calc(5px + env(safe-area-inset-bottom))}
+    .bottomnav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;font-weight:600;color:var(--ink2);padding:6px 2px;border-radius:8px}
+    .bottomnav button .nav-ico{font-size:18px}
+    .bottomnav button.on{color:var(--primary)}
+    .whoami .who-text{display:none}
+  }
+  .brandmark{white-space:nowrap}
+  .sync-chip{white-space:nowrap}
+  @media (max-width:520px){
+    .role-pill{display:none}
+    .sync-chip{display:none}
+    .topbar .brandmark{font-size:14px}
+    .topbar{gap:9px;padding:10px 12px}
+  }
+
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:18px}
+  .grid3{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px}
+  .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;box-shadow:var(--shadow);display:flex;gap:14px;align-items:flex-start}
+  .stat .stat-ico{width:38px;height:38px;border-radius:9px;background:var(--surface2);color:var(--primary);display:flex;align-items:center;justify-content:center;flex:none;margin-top:1px}
+  .stat .stat-v{font-family:"Archivo","Public Sans",sans-serif;font-size:26px;font-weight:700;margin-top:3px;letter-spacing:-.01em}
+  .stat .stat-d{font-size:12px;color:var(--ink2);margin-top:2px}
+  .page-head h1::before{content:"";display:block;width:34px;height:4px;border-radius:2px;background:var(--primary);margin-bottom:12px}
+
+  .list-row{display:flex;align-items:center;gap:13px;padding:12px 0;border-top:1px solid var(--line)}
+  .list-row:first-child{border-top:none}
+  .list-row .grow{flex:1;min-width:0}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{text-align:left;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink2);font-weight:700;padding:10px 12px;border-bottom:1px solid var(--line2);background:var(--surface2)}
+  tbody tr:hover td{background:var(--surface2)}
+  td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  .tablewrap{overflow-x:auto}
+
+  .course-card{display:flex;flex-direction:column;overflow:hidden}
+  .course-band{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:var(--navy);color:var(--navy-ink);border-bottom:3px solid var(--primary)}
+  .course-band .band-subj{font-family:"Archivo","Public Sans",sans-serif;font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.85}
+  .course-band .band-mono{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-family:"Archivo","Public Sans",sans-serif;font-weight:800;font-size:15px}
+  .course-body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:8px;flex:1}
+  .course-body h3{font-size:17px}
+  .course-foot{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:10px}
+  .price{font-family:"Archivo","Public Sans",sans-serif;font-size:19px;font-weight:600}
+  .price span{font-family:"Public Sans",sans-serif;font-size:12px;color:var(--ink2);font-weight:500}
+
+  .field{margin-bottom:13px}
+  .field label{display:block;font-size:12.5px;font-weight:600;margin-bottom:5px;color:var(--ink2)}
+  .field-row{display:flex;gap:12px}.field-row>.field{flex:1}
+
+  /* modal */
+  .modal-veil{position:fixed;inset:0;z-index:80;background:rgba(15,25,22,.45);display:flex;align-items:flex-end;justify-content:center;padding:0}
+  @media(min-width:640px){.modal-veil{align-items:center;padding:24px}}
+  .modal{background:var(--surface);border-radius:18px 18px 0 0;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
+  @media(min-width:640px){.modal{border-radius:18px}}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 0}
+  .modal-head h2{font-size:19px}
+  .modal-body{padding:16px 22px 24px}
+  .payline{display:flex;justify-content:space-between;font-size:14px;padding:7px 0}
+  .payline.total{border-top:1px solid var(--line2);font-weight:700;font-size:15px;margin-top:5px;padding-top:11px}
+  .democard{background:var(--surface2);border:1px dashed var(--line2);border-radius:11px;padding:13px 15px;margin:13px 0}
+
+  .toast-zone{position:fixed;bottom:18px;right:18px;z-index:120;display:flex;flex-direction:column;gap:9px;max-width:min(360px,calc(100vw - 36px))}
+  @media(max-width:880px){.toast-zone{bottom:86px}}
+  .toast{background:var(--ink);color:var(--bg);border-radius:11px;padding:11px 15px;font-size:13.5px;box-shadow:var(--shadow-lg);display:flex;gap:9px;align-items:flex-start;animation:pop .22s ease}
+  @keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  .bell-menu{position:absolute;right:0;top:44px;width:min(340px,calc(100vw - 28px));background:var(--surface);border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow-lg);z-index:60;overflow:hidden}
+  .bell-menu .bm-head{padding:11px 15px;font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink2);border-bottom:1px solid var(--line)}
+  .bell-item{padding:11px 15px;font-size:13px;border-bottom:1px solid var(--line);display:flex;gap:9px}
+  .bell-item:last-child{border-bottom:none}
+  .bell-item time{display:block;font-size:11px;color:var(--ink3);margin-top:2px}
+
+  .timetable td{vertical-align:top;min-width:112px;height:48px}
+  .timetable th:first-child,.timetable .tt-time{width:88px;min-width:88px}
+  .tt-time{font-weight:700;color:var(--ink2);font-size:12.5px;white-space:nowrap;padding-top:14px}
+  .tt-item{background:var(--navy);color:var(--navy-ink);border-left:3px solid var(--primary);border-radius:7px;padding:7px 10px;font-size:12px;margin:2px 0;min-width:128px}
+  .tt-item b{display:block;font-size:12.5px;line-height:1.3}
+  .tt-item span{opacity:.75;font-size:11px}
+  th.tt-today{color:var(--primary)}
+  .timetable td.tt-col-today{background:var(--surface2)}
+  .timetable tbody tr:hover td{background:transparent}
+  .timetable tbody tr:hover td.tt-col-today{background:var(--surface2)}
+  .sched-day{margin-bottom:16px}
+  .sched-day h3{font-size:13px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink2);font-family:"Public Sans",sans-serif;font-weight:700;margin-bottom:7px}
+  .sess{display:flex;align-items:center;gap:13px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--primary);border-radius:10px;padding:11px 14px;margin-bottom:8px}
+  .sess .sess-time{font-variant-numeric:tabular-nums;font-weight:700;font-size:13.5px;min-width:72px}
+
+  .timeline{position:relative;padding-left:22px}
+  .timeline::before{content:"";position:absolute;left:6px;top:6px;bottom:6px;width:2px;background:var(--line2);border-radius:2px}
+  .tl-item{position:relative;padding-bottom:18px}
+  .tl-item::before{content:"";position:absolute;left:-21px;top:5px;width:12px;height:12px;border-radius:50%;background:var(--primary);border:2.5px solid var(--bg)}
+
+  .barchart .bar-row{display:grid;grid-template-columns:fit-content(132px) 1fr 64px;align-items:center;gap:10px;margin-bottom:9px;font-size:12.5px}
+  .barchart .bar-row span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:132px}
+  .barchart .bar-track{height:22px;border-radius:5px;background:var(--surface2);overflow:hidden}
+  .barchart .bar-fill{display:block;height:100%;background:var(--primary);border-radius:0 4px 4px 0;min-width:2px}
+  .barchart .bar-val{text-align:right;font-variant-numeric:tabular-nums;color:var(--ink2)}
+
+  .spin{width:20px;height:20px;border:2.5px solid var(--primary-soft);border-top-color:var(--primary);border-radius:50%;animation:sp 0.8s linear infinite;display:inline-block;vertical-align:middle}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .success-blob{width:62px;height:62px;border-radius:50%;background:var(--good-soft);color:var(--good);display:flex;align-items:center;justify-content:center;font-size:30px;margin:6px auto 14px}
+  .empty{padding:34px 20px;text-align:center;color:var(--ink2);font-size:13.5px}
+  .section-title{font-size:16px;margin:26px 0 12px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+</style>
+
+<div id="app"></div>
+<div id="modal-root"></div>
+<div class="toast-zone" id="toasts"></div>
+
+<script>
+"use strict";
+/* ============================ data =============================== */
+const LS_KEY = "bw-demo-v5";
+const DAY = 86400000;
+const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+function seedState(){
+  const now = Date.now();
+  const m = k => now - k*30*DAY; // ~k months ago
+  return {
+    users: [
+      {id:"a1", role:"admin",   name:"Alex Morgan",  email:"alex@brightway.demo"},
+      {id:"t1", role:"teacher", name:"Maya Chen",    email:"maya@brightway.demo",  subjects:"Maths · Science", bio:"10 years teaching primary maths and science. I focus on confidence first — the marks follow.", status:"active"},
+      {id:"t2", role:"teacher", name:"Daniel Okafor",email:"daniel@brightway.demo",subjects:"Piano · Guitar",  bio:"Conservatory-trained musician. Lessons are playful, practice is structured.", status:"active"},
+      {id:"t3", role:"teacher", name:"Sofia Reyes",  email:"sofia@brightway.demo", subjects:"English · Writing", bio:"Published children's author. I help kids find their voice on the page.", status:"active"},
+      {id:"t4", role:"teacher", name:"James Park",   email:"james@brightway.demo", subjects:"Coding", bio:"Software engineer turned educator. Scratch, Python and lots of games.", status:"pending"},
+      {id:"p1", role:"parent",  name:"Sarah Ahmed",  email:"sarah@family.demo",  phone:"+65 9123 4567", address:"Blk 123 Tampines St 45, #05-67, Singapore 521123"},
+      {id:"p2", role:"parent",  name:"Michael Lee",  email:"michael@family.demo", phone:"+65 9876 5432", address:"18 Bedok Rise, #12-03, Singapore 469421"},
+      {id:"c1", role:"child", parentId:"p1", name:"Zara Ahmed", age:9},
+      {id:"c2", role:"child", parentId:"p1", name:"Adam Ahmed", age:12},
+      {id:"c3", role:"child", parentId:"p2", name:"Emma Lee",  age:10}
+    ],
+    courses: [
+      {id:"crs1", title:"Maths Foundations",  subject:"Maths",   icon:"➗", teacherId:"t1", price:120, desc:"Small-group maths for ages 8–11. Number sense, fractions and word problems, taught through games and weekly challenges.", schedule:[{day:"Mon",time:"16:00"},{day:"Wed",time:"16:00"}], status:"active"},
+      {id:"crs2", title:"Beginner Piano",     subject:"Music",   icon:"🎹", teacherId:"t2", price:150, desc:"One-to-one style attention in a group of four. Reading music, first pieces, and a recital each term.", schedule:[{day:"Tue",time:"17:00"}], status:"active"},
+      {id:"crs3", title:"Creative Writing Club", subject:"English", icon:"✍️", teacherId:"t3", price:90, desc:"Story craft for ages 9–13: characters, worlds and weekly writing prompts, with gentle feedback.", schedule:[{day:"Thu",time:"16:30"}], status:"active"},
+      {id:"crs4", title:"Science Explorers",  subject:"Science", icon:"🔬", teacherId:"t1", price:110, desc:"Hands-on experiments every Saturday. Kitchen chemistry, simple circuits and the scientific method.", schedule:[{day:"Sat",time:"10:00"}], status:"active"},
+      {id:"crs5", title:"Intro to Coding",    subject:"Coding",  icon:"💻", teacherId:"t4", price:130, desc:"First steps in Scratch, building toward Python. Kids ship a playable game by week six.", schedule:[{day:"Fri",time:"16:00"}], status:"active"},
+      {id:"crs6", title:"Guitar Basics",      subject:"Music",   icon:"🎸", teacherId:"t2", price:140, desc:"Chords, strumming and first songs. Bring your own guitar or borrow one of ours.", schedule:[{day:"Sat",time:"11:30"}], status:"active"}
+    ],
+    enrollments: [
+      {id:"e1", courseId:"crs1", childId:"c1", parentId:"p1", ts:m(3)},
+      {id:"e2", courseId:"crs2", childId:"c1", parentId:"p1", ts:m(2)},
+      {id:"e3", courseId:"crs5", childId:"c2", parentId:"p1", ts:m(2)},
+      {id:"e4", courseId:"crs3", childId:"c3", parentId:"p2", ts:m(4)}
+    ],
+    payments: [
+      {id:"pay1", invoiceNo:"INV-1001", ts:m(5), parentId:"p2", childId:"c3", courseId:"crs3", amount:90,  method:"Visa •••• 4242", status:"paid"},
+      {id:"pay2", invoiceNo:"INV-1002", ts:m(4), parentId:"p2", childId:"c3", courseId:"crs3", amount:90,  method:"Visa •••• 4242", status:"paid"},
+      {id:"pay3", invoiceNo:"INV-1003", ts:m(3), parentId:"p1", childId:"c1", courseId:"crs1", amount:120, method:"Mastercard •••• 5100", status:"paid"},
+      {id:"pay4", invoiceNo:"INV-1004", ts:m(2), parentId:"p1", childId:"c1", courseId:"crs2", amount:150, method:"Mastercard •••• 5100", status:"paid"},
+      {id:"pay5", invoiceNo:"INV-1005", ts:m(2), parentId:"p1", childId:"c2", courseId:"crs5", amount:130, method:"Mastercard •••• 5100", status:"paid"},
+      {id:"pay6", invoiceNo:"INV-1006", ts:m(1), parentId:"p1", childId:"c1", courseId:"crs1", amount:120, method:"Mastercard •••• 5100", status:"paid"},
+      {id:"pay7", invoiceNo:"INV-1007", ts:m(1), parentId:"p2", childId:"c3", courseId:"crs3", amount:90,  method:"Visa •••• 4242", status:"paid"}
+    ],
+    invSeq: 1008,
+    reviews: [
+      {id:"rv1", courseId:"crs1", parentId:"p1", rating:5, text:"Zara went from dreading maths homework to asking for extra challenges. Maya is wonderful.", ts:m(1), status:"approved"},
+      {id:"rv2", courseId:"crs3", parentId:"p2", rating:4, text:"Emma looks forward to Thursdays all week. Would love slightly more written feedback.", ts:m(2), status:"approved"},
+      {id:"rv3", courseId:"crs2", parentId:"p1", rating:5, text:"Daniel makes practice feel like play. Highly recommend.", ts:now-2*DAY, status:"pending"}
+    ],
+    progress: [
+      {id:"pr1", childId:"c1", courseId:"crs1", teacherId:"t1", ts:now-9*DAY, score:4, note:"Great week on fractions — Zara explained equivalent fractions to the whole group."},
+      {id:"pr2", childId:"c1", courseId:"crs2", teacherId:"t2", ts:now-6*DAY, score:3, note:"Solid progress on the C major scale. Ten minutes of daily practice will unlock the next piece."},
+      {id:"pr3", childId:"c2", courseId:"crs5", teacherId:"t4", ts:now-4*DAY, score:5, note:"Adam finished his maze game early and helped two classmates debug theirs. Outstanding."},
+      {id:"pr4", childId:"c3", courseId:"crs3", teacherId:"t3", ts:now-3*DAY, score:4, note:"Emma's short story had a genuinely surprising twist. Working on dialogue punctuation next."}
+    ],
+    attendance: (()=>{
+      const ds = k => new Date(now - k*DAY).toISOString().slice(0,10);
+      return [
+        {id:"at1", childId:"c1", courseId:"crs1", teacherId:"t1", date:ds(9),  status:"present"},
+        {id:"at2", childId:"c1", courseId:"crs1", teacherId:"t1", date:ds(7),  status:"present"},
+        {id:"at3", childId:"c1", courseId:"crs1", teacherId:"t1", date:ds(2),  status:"late"},
+        {id:"at4", childId:"c1", courseId:"crs2", teacherId:"t2", date:ds(6),  status:"present"},
+        {id:"at5", childId:"c2", courseId:"crs5", teacherId:"t4", date:ds(10), status:"absent"},
+        {id:"at6", childId:"c2", courseId:"crs5", teacherId:"t4", date:ds(3),  status:"present"},
+        {id:"at7", childId:"c3", courseId:"crs3", teacherId:"t3", date:ds(11), status:"present"},
+        {id:"at8", childId:"c3", courseId:"crs3", teacherId:"t3", date:ds(4),  status:"present"}
+      ];
+    })(),
+    exams: (()=>{
+      const fd = k => new Date(now + k*DAY).toISOString().slice(0,10);
+      const pd = k => new Date(now - k*DAY).toISOString().slice(0,10);
+      return [
+        {id:"ex0", courseId:"crs1", title:"Placement Check",   date:pd(20), time:"10:00", room:"Room 2"},
+        {id:"exp", courseId:"crs3", title:"Draft Review",      date:pd(15), time:"16:30", room:"Room 1"},
+        {id:"ex1", courseId:"crs1", title:"Term Assessment",   date:fd(9),  time:"10:00", room:"Room 2"},
+        {id:"ex2", courseId:"crs3", title:"Writing Portfolio", date:fd(7),  time:"16:30", room:"Room 1"},
+        {id:"ex3", courseId:"crs4", title:"Science Quiz",      date:fd(11), time:"10:00", room:"Lab"},
+        {id:"ex4", courseId:"crs5", title:"Project Demo Day",  date:fd(12), time:"16:00", room:"Lab"},
+        {id:"ex5", courseId:"crs2", title:"Piano Practical",   date:fd(13), time:"17:00", room:"Studio A"}
+      ];
+    })(),
+    results: [
+      {id:"rs1", examId:"ex0", childId:"c1", marks:85, teacherId:"t1", ts:now-19*DAY},
+      {id:"rs2", examId:"exp", childId:"c3", marks:78, teacherId:"t3", ts:now-14*DAY}
+    ],
+    complaints: [
+      {id:"cm1", parentId:"p2", subject:"Weekend parking", text:"Saturday pickup parking is difficult — could the academy arrange access to the side lot?", ts:now-6*DAY, status:"in_progress", reply:"We're arranging weekend access with the building manager — update by next week.", updatedAt:now-4*DAY}
+    ],
+    events: [
+      {id:"ev1", ts:now-2*DAY, icon:"⭐", text:"New review from Sarah Ahmed is awaiting approval (Beginner Piano).", roles:["admin"], userIds:[]}
+    ]
+  };
+}
+
+let S = null;
+function loadState(){
+  try{ const raw = localStorage.getItem(LS_KEY); if(raw){ const st = JSON.parse(raw);
+    ["attendance","exams","results","complaints"].forEach(k=>{ st[k] = st[k] || []; });
+    st.invSeq = st.invSeq || 1008;
+    return st; } }catch(e){}
+  return null;
+}
+function save(){
+  S.version = (S.version||0) + 1;
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(e){}
+  schedulePush();
+}
+S = loadState() || seedState();
+S.version = S.version || 1;
+try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(e){}
+
+/* ---------- cloud sync (Supabase) ----------
+   State lives in one jsonb row (id=1). Every device pushes on change and
+   polls for newer versions, so actions on a phone appear on a laptop in ~2s.
+   If the cloud is unreachable (e.g. inside the claude.ai artifact sandbox),
+   the demo silently falls back to this-device-only mode. */
+const CLOUD = {
+  url: "https://wmulemkyjrjetwyzrsqq.supabase.co",
+  key: "sb_publishable_VPc25AP9EqO2on4Szh7ghQ_TsMJJu9W",
+  table: "brightway_demo_state"
+};
+let syncState = "connecting";
+function syncChip(){
+  return syncState==="live" ? `<span class="chip chip-good sync-chip" title="Synced across all devices">● Live sync</span>`
+       : syncState==="offline" ? `<span class="chip chip-muted sync-chip" title="Cloud not reachable — changes stay on this device">● This device</span>`
+       : `<span class="chip chip-muted sync-chip">● Connecting</span>`;
+}
+function setSync(s){
+  if(syncState===s) return;
+  syncState = s;
+  const el = document.querySelector(".sync-chip");
+  if(el){ const tmp=document.createElement("span"); tmp.innerHTML=syncChip(); el.replaceWith(tmp.firstChild); }
+}
+function cloudHeaders(){ return {apikey:CLOUD.key, Authorization:"Bearer "+CLOUD.key, "Content-Type":"application/json"}; }
+let pushTimer = null;
+function schedulePush(){ clearTimeout(pushTimer); pushTimer = setTimeout(pushCloud, 300); }
+async function pushCloud(){
+  try{
+    const r = await fetch(CLOUD.url+"/rest/v1/"+CLOUD.table+"?on_conflict=id", {
+      method:"POST",
+      headers:Object.assign(cloudHeaders(), {Prefer:"resolution=merge-duplicates,return=minimal"}),
+      body:JSON.stringify([{id:1, version:S.version, state:S}])
+    });
+    setSync(r.ok ? "live" : "offline");
+  }catch(e){ setSync("offline"); }
+}
+let polling = false;
+async function pollCloud(){
+  if(polling) return; polling = true;
+  try{
+    const r = await fetch(CLOUD.url+"/rest/v1/"+CLOUD.table+"?id=eq.1&select=version,state", {headers:cloudHeaders()});
+    if(!r.ok) throw new Error("http "+r.status);
+    const rows = await r.json();
+    const row = rows && rows[0];
+    if(!row){ await pushCloud(); }
+    else if((row.version||0) > (S.version||0)){
+      const prevIds = new Set(S.events.map(ev=>ev.id));
+      S = row.state; S.version = row.version;
+      ["attendance","exams","results","complaints"].forEach(k=>{ S[k]=S[k]||[]; });
+      try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(e){}
+      const sess = getSess();
+      S.events.filter(ev=>!prevIds.has(ev.id) && eventFor(ev,sess)).slice(0,3).reverse().forEach(ev=>toast(ev.icon+" "+ev.text));
+      const y = window.scrollY; render(); window.scrollTo(0, y);
+      setSync("live");
+    }
+    else if((row.version||0) < (S.version||0)){ await pushCloud(); }
+    else setSync("live");
+  }catch(e){ setSync("offline"); }
+  polling = false;
+}
+setInterval(pollCloud, 2500);
+pollCloud();
+
+/* session (per tab) */
+function getSess(){ try{ return JSON.parse(sessionStorage.getItem("bw-sess")) || {}; }catch(e){ return {}; } }
+function setSess(patch){ const s = Object.assign(getSess(), patch); sessionStorage.setItem("bw-sess", JSON.stringify(s)); return s; }
+
+/* ---------- helpers ---------- */
+const ICONS = {
+  home:'<path d="M3 9.5 12 3l9 6.5V20a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 20z"/><path d="M9 21.5V13h6v8.5"/>',
+  book:'<path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/>',
+  users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  card:'<rect x="1.5" y="4.5" width="21" height="15" rx="2"/><line x1="1.5" y1="10" x2="22.5" y2="10"/>',
+  calendar:'<rect x="3" y="4.5" width="18" height="17" rx="2"/><line x1="16" y1="2.5" x2="16" y2="6.5"/><line x1="8" y1="2.5" x2="8" y2="6.5"/><line x1="3" y1="10.5" x2="21" y2="10.5"/>',
+  star:'<polygon points="12 2.5 15.09 8.6 22 9.6 17 14.4 18.18 21.2 12 18 5.82 21.2 7 14.4 2 9.6 8.91 8.6 12 2.5"/>',
+  chart:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+  grad:'<path d="M22 9 12 4 2 9l10 5 10-5z"/><path d="M6 11.5V16c0 1.6 2.7 3 6 3s6-1.4 6-3v-4.5"/>',
+  user:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  bell:'<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
+  search:'<circle cx="11" cy="11" r="7.5"/><line x1="21" y1="21" x2="16.5" y2="16.5"/>',
+  dollar:'<line x1="12" y1="1.5" x2="12" y2="22.5"/><path d="M17 5.5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+  alert:'<circle cx="12" cy="12" r="9.5"/><line x1="12" y1="7.5" x2="12" y2="13"/><line x1="12" y1="16.5" x2="12.01" y2="16.5"/>',
+  building:'<line x1="3" y1="21.5" x2="21" y2="21.5"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><path d="M4 7.5 12 3l8 4.5v0H4z"/>',
+  heart:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>',
+  clip:'<path d="M9 3h6a1 1 0 0 1 1 1v2H8V4a1 1 0 0 1 1-1z"/><path d="M16 4.5h3a1 1 0 0 1 1 1V21a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5.5a1 1 0 0 1 1-1h3"/><path d="m9 13.5 2 2 4-4"/>',
+  file:'<path d="M14 2.5H6a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-11z"/><polyline points="14 2.5 14 8.5 20 8.5"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
+  award:'<circle cx="12" cy="8.5" r="5.5"/><path d="M15.4 13 17 22l-5-3-5 3 1.6-9"/>',
+  message:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'
+};
+const icon = n => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]||""}</svg>`;
+const cdot = c => `<span class="cdot">${esc(((c&&c.subject)||"C")[0])}</span>`;
+const uid = p => (p||"id") + Math.random().toString(36).slice(2,9);
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const money = n => "$" + Number(n).toFixed(2);
+const user = id => S.users.find(u=>u.id===id);
+const course = id => S.courses.find(c=>c.id===id);
+const childrenOf = pid => S.users.filter(u=>u.role==="child" && u.parentId===pid);
+const enrollmentsForChild = cid => S.enrollments.filter(e=>e.childId===cid);
+const rosterForCourse = crsId => S.enrollments.filter(e=>e.courseId===crsId);
+const coursesOfTeacher = tid => S.courses.filter(c=>c.teacherId===tid);
+const approvedReviews = crsId => S.reviews.filter(r=>r.courseId===crsId && r.status==="approved");
+const initials = n => n.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase();
+function avgRating(crsId){ const rs = approvedReviews(crsId); return rs.length ? rs.reduce((a,r)=>a+r.rating,0)/rs.length : null; }
+function starStr(n){ n = Math.round(n); return "★".repeat(n) + "☆".repeat(5-n); }
+function fmtTime(t){ const [h,mn]=t.split(":").map(Number); const ap = h>=12?"PM":"AM"; const hh=((h+11)%12)+1; return hh + ":" + String(mn).padStart(2,"0") + " " + ap; }
+function fmtSched(sc){ return sc.map(s=>s.day+" "+fmtTime(s.time)).join(" · "); }
+function fmtDate(ts){ return new Date(ts).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}); }
+function ago(ts){ const d=Date.now()-ts; if(d<60000)return "just now"; if(d<3600000)return Math.floor(d/60000)+"m ago"; if(d<DAY)return Math.floor(d/3600000)+"h ago"; return Math.floor(d/DAY)+"d ago"; }
+function childCourses(cid){ return enrollmentsForChild(cid).map(e=>course(e.courseId)).filter(Boolean); }
+const fmtDateStr = d => new Date(d+"T00:00").toLocaleDateString(undefined,{month:"short",day:"numeric"});
+const attOf = cid => (S.attendance||[]).filter(a=>a.childId===cid);
+function attSummary(list){
+  const p=list.filter(a=>a.status==="present").length, l=list.filter(a=>a.status==="late").length, ab=list.filter(a=>a.status==="absent").length;
+  return {p, l, ab, rate: list.length ? Math.round((p+l)/list.length*100) : null};
+}
+const ATT_CHIP = {present:'<span class="chip chip-good">Present</span>', late:'<span class="chip chip-warn">Late</span>', absent:'<span class="chip chip-bad">Absent</span>'};
+function gradeOf(m){ return m>=85?"A":m>=70?"B":m>=55?"C":m>=40?"D":"F"; }
+function gradeChip(m){ const g=gradeOf(m); const cls = g==="A"||g==="B" ? "chip-good" : g==="F" ? "chip-bad" : "chip-warn"; return `<span class="chip ${cls}">${g}</span>`; }
+const CMP_LABEL = {open:"Open", in_progress:"In progress", resolved:"Resolved"};
+const CMP_CHIP  = {open:"chip-warn", in_progress:"chip-accent", resolved:"chip-good"};
+const exam = id => (S.exams||[]).find(e=>e.id===id);
+const isFutureDate = d => d >= new Date().toISOString().slice(0,10);
+function isEnrolled(crsId, childId){ return S.enrollments.some(e=>e.courseId===crsId && e.childId===childId); }
+
+/* who does an event reach? */
+function eventFor(ev, sess){
+  if(!sess.userId) return false;
+  return (ev.roles||[]).includes(sess.role) || (ev.userIds||[]).includes(sess.userId);
+}
+function addEvent(icon, text, roles, userIds){
+  S.events.unshift({id:uid("ev"), ts:Date.now(), icon, text, roles:roles||[], userIds:userIds||[]});
+  S.events = S.events.slice(0,60);
+}
+function myEvents(){ const sess=getSess(); return S.events.filter(ev=>eventFor(ev,sess)); }
+function unreadCount(){ const seen = Number(sessionStorage.getItem("bw-seen")||0); return myEvents().filter(ev=>ev.ts>seen).length; }
+
+/* mutate + persist + rerender (storage event updates other tabs) */
+function commit(fn){ fn(); save(); render(); }
+
+/* cross-tab sync */
+window.addEventListener("storage", e=>{
+  if(e.key!==LS_KEY || !e.newValue) return;
+  const prevIds = new Set(S.events.map(ev=>ev.id));
+  try{ S = JSON.parse(e.newValue); }catch(err){ return; }
+  const sess = getSess();
+  S.events.filter(ev=>!prevIds.has(ev.id) && eventFor(ev,sess)).slice(0,3).reverse()
+    .forEach(ev=>toast(ev.icon+" "+ev.text));
+  const y = window.scrollY; render(); window.scrollTo(0,y);
+});
+
+function toast(msg){
+  const z = document.getElementById("toasts");
+  const el = document.createElement("div");
+  el.className = "toast"; el.textContent = msg;
+  z.appendChild(el);
+  setTimeout(()=>{ el.style.opacity="0"; el.style.transition="opacity .3s"; setTimeout(()=>el.remove(),320); }, 4600);
+}
+
+/* ============================ shell ============================== */
+const NAV = {
+  parent:  [["dashboard","home","Home"],["browse","search","Classes"],["children","users","My children"],["payments","card","Payments"],["results","award","Results"],["exams","file","Exams"],["complaints","message","Complaints"],["notifications","bell","Notifications"],["profile","user","Profile"]],
+  child:   [["dashboard","home","Home"],["myclasses","book","My classes"],["schedule","calendar","Schedule"],["results","award","Results"],["exams","file","Exams"],["progress","star","Progress"],["notifications","bell","Notifications"],["profile","user","Profile"]],
+  teacher: [["dashboard","home","Home"],["classes","book","My classes"],["students","grad","Students"],["attendance","clip","Attendance"],["results","award","Results"],["exams","file","Exams"],["schedule","calendar","Schedule"],["notifications","bell","Notifications"],["profile","user","Profile"]],
+  admin:   [["dashboard","home","Home"],["users","users","Users"],["courses","book","Classes"],["payments","card","Payments"],["attendance","clip","Attendance"],["exams","file","Exams"],["reviews","star","Reviews"],["complaints","message","Complaints"],["reports","chart","Reports"],["notifications","bell","Notifications"]]
+};
+const ROLE_LABEL = {admin:"Admin", teacher:"Teacher", parent:"Parent", child:"Student"};
+const ROLE_CHIP  = {admin:"chip-accent", teacher:"chip-primary", parent:"chip-good", child:"chip-warn"};
+
+function brand(){ return `<span class="brandmark"><span class="bm-dot">B</span>Brightway Academy</span>`; }
+
+function render(){
+  const sess = getSess();
+  const root = document.getElementById("app");
+  if(!sess.userId || !user(sess.userId)){ root.innerHTML = pickerView(); return; }
+  const me = user(sess.userId);
+  const nav = NAV[sess.role];
+  const view = sess.view || "dashboard";
+  const bodyFn = VIEWS[sess.role + "/" + view] || VIEWS[sess.role + "/dashboard"];
+  const bellOpen = sess.bellOpen;
+  root.innerHTML = `
+  <div class="masthead">🦁 <span><b>A Brightway Academy demo site.</b> All data is placeholder; payments are simulated.</span></div>
+  <header class="topbar">
+    ${brand()}
+    <span class="chip ${ROLE_CHIP[sess.role]} role-pill">${ROLE_LABEL[sess.role]}</span>
+    ${syncChip()}
+    <span class="topbar-spacer"></span>
+    <div style="position:relative">
+      <button class="iconbtn" data-act="toggleBell" aria-label="Notifications">${icon("bell")}${unreadCount()?`<span class="badge num">${unreadCount()}</span>`:""}</button>
+      ${bellOpen ? bellMenu() : ""}
+    </div>
+    <div class="whoami">
+      <span class="avatar">${initials(me.name)}</span>
+      <span class="who-text"><span class="who-name">${esc(me.name)}</span><br><span class="who-role">${ROLE_LABEL[sess.role]}</span></span>
+    </div>
+    <button class="btn btn-ghost btn-sm" data-act="signOut">Switch user</button>
+  </header>
+  <div class="layout">
+    <nav class="sidenav">
+      ${nav.map(([v,ico,label])=>`<button class="${view===v?"on":""}" data-act="go" data-arg="${v}">${icon(ico)}${label}</button>`).join("")}
+    </nav>
+    <main class="main">${bodyFn(me, sess)}</main>
+  </div>
+  <nav class="bottomnav">
+    ${nav.slice(0,5).map(([v,ico,label])=>`<button class="${view===v?"on":""}" data-act="go" data-arg="${v}"><span class="nav-ico">${icon(ico)}</span>${label}</button>`).join("")}
+  </nav>`;
+}
+
+function bellMenu(){
+  const evs = myEvents().slice(0,8);
+  sessionStorage.setItem("bw-seen", String(Date.now()));
+  return `<div class="bell-menu">
+    <div class="bm-head">Notifications</div>
+    ${evs.length ? evs.map(ev=>`<div class="bell-item"><span>${ev.icon}</span><div>${esc(ev.text)}<time>${ago(ev.ts)}</time></div></div>`).join("") : `<div class="empty">Nothing yet — actions by other users will show up here.</div>`}
+    <button class="bell-item" data-act="go" data-arg="notifications" style="width:100%;justify-content:center;font-weight:700;color:var(--primary)">View all notifications</button>
+  </div>`;
+}
+
+/* ============================ landing ============================ */
+function pickerView(){
+  const groups = [
+    {role:"admin",   cls:"rp-admin",   ico:"building", title:"Admin",   desc:"Runs the academy — people, classes, money, reviews."},
+    {role:"teacher", cls:"rp-teacher", ico:"book",     title:"Teacher", desc:"Teaches classes, tracks each student's progress."},
+    {role:"parent",  cls:"rp-parent",  ico:"heart",    title:"Parent",  desc:"Enrols children, pays, follows progress, reviews."},
+    {role:"child",   cls:"rp-student", ico:"grad",     title:"Student", desc:"Sees their classes, schedule and achievements."}
+  ];
+  const personaMeta = u =>
+    u.role==="teacher" ? esc(u.subjects||"")+(u.status==="pending"?" · awaiting approval":"")
+    : u.role==="child" ? "Age "+u.age+" · "+esc(((user(u.parentId)||{}).name||"").split(" ")[0])+"’s family"
+    : u.role==="parent" ? childrenOf(u.id).length+" child"+(childrenOf(u.id).length===1?"":"ren")+" · "+S.enrollments.filter(e=>e.parentId===u.id).length+" enrolments"
+    : "Academy owner";
+  return `<div class="hero">
+    <div class="hero-in">
+      ${brand()}
+      <h1>One academy,<br>four experiences.</h1>
+      <p class="lede">A live, clickable demo of the whole platform. Sign in as anyone below and try the real journeys — enrol a child, take a payment, post a progress update, approve a review — and watch it ripple across every other dashboard.</p>
+      <div class="hero-stats">
+        <span class="hero-stat"><b>${S.courses.filter(c=>c.status==="active").length}</b> weekly classes</span>
+        <span class="hero-stat"><b>${S.users.filter(u=>u.role==="teacher"&&u.status==="active").length}</b> teachers</span>
+        <span class="hero-stat"><b>${S.users.filter(u=>u.role==="child").length}</b> students</span>
+        <span class="hero-stat"><b>${S.enrollments.length}</b> enrolments</span>
+      </div>
+      <div class="demo-note"><span>💡</span><span><b>Demo tip:</b> open this page on two devices or windows — a phone and a laptop work great — signed in as different people. Actions on one appear on the other within seconds. All data is placeholder; payments are simulated.</span></div>
+    </div>
+  </div>
+  <div class="picker-body">
+    <div class="role-grid">
+      ${groups.map(g=>`<div class="role-panel ${g.cls}">
+        <div class="role-head">
+          <span class="role-ico">${icon(g.ico)}</span>
+          <div><h3>${g.title}</h3><p>${g.desc}</p></div>
+        </div>
+        <div class="personas">
+        ${S.users.filter(u=>u.role===g.role).map(u=>`
+          <button class="persona" data-act="signIn" data-arg="${u.id}">
+            <span class="avatar">${initials(u.name)}</span>
+            <span><b>${esc(u.name)}</b><span class="meta">${personaMeta(u)}</span></span>
+            <span class="go" aria-hidden="true">→</span>
+          </button>`).join("")}
+        </div>
+      </div>`).join("")}
+    </div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:26px">
+      <button class="btn btn-primary" data-act="openRegParent">＋ Create a parent account</button>
+      <button class="btn btn-ghost" data-act="openApplyTeacher">Apply to teach</button>
+    </div>
+    <p class="picker-foot tiny">Brightway Academy · demo prototype with placeholder content · <button class="btn btn-ghost btn-sm" data-act="resetDemo">Reset demo data</button></p>
+  </div>`;
+}
+
+/* ============================ views ============================== */
+const VIEWS = {};
+
+function pageHead(title, sub, right){
+  return `<div class="page-head"><div><h1>${title}</h1>${sub?`<div class="sub">${sub}</div>`:""}</div>${right||""}</div>`;
+}
+function statCard(ico, label, value, detail){
+  return `<div class="stat"><span class="stat-ico">${icon(ico)}</span><div><div class="eyebrow">${label}</div><div class="stat-v num">${value}</div>${detail?`<div class="stat-d">${detail}</div>`:""}</div></div>`;
+}
+function courseCard(c, actions){
+  const r = avgRating(c.id);
+  const t = user(c.teacherId);
+  return `<div class="card course-card">
+    <div class="course-band"><span class="band-mono">${esc((c.title||"C")[0])}</span><span class="band-subj">${esc(c.subject)}</span></div>
+    <div class="course-body">
+      ${c.status!=="active"?`<div><span class="chip chip-muted">Draft</span></div>`:""}
+      <h3>${esc(c.title)}</h3>
+      <div class="small muted">with ${esc(t?t.name:"TBC")} · ${fmtSched(c.schedule)}</div>
+      <div class="small">${r?`<span class="stars">${starStr(r)}</span> <span class="muted num">${r.toFixed(1)} (${approvedReviews(c.id).length})</span>`:`<span class="muted">No reviews yet</span>`}</div>
+      <div class="course-foot"><span class="price num">${money(c.price)}<span> /month</span></span>${actions||""}</div>
+    </div>
+  </div>`;
+}
+
+/* ---------------- PARENT ---------------- */
+VIEWS["parent/dashboard"] = me => {
+  const kids = childrenOf(me.id);
+  const feed = S.progress.filter(p=>kids.some(k=>k.id===p.childId)).sort((a,b)=>b.ts-a.ts).slice(0,4);
+  return pageHead(`Welcome back, ${esc(me.name.split(" ")[0])}`, "Here’s how your family is doing this week.") + `
+  <div class="grid2">
+    ${kids.map(k=>{
+      const crs = childCourses(k.id);
+      const latest = S.progress.filter(p=>p.childId===k.id).sort((a,b)=>b.ts-a.ts)[0];
+      return `<div class="card card-pad">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+          <span class="avatar" style="width:42px;height:42px">${initials(k.name)}</span>
+          <div><b>${esc(k.name)}</b><div class="tiny muted">Age ${k.age} · ${crs.length} class${crs.length===1?"":"es"}</div></div>
+          <span style="flex:1"></span>
+          <button class="btn btn-ghost btn-sm" data-act="goChild" data-arg="${k.id}">Progress</button>
+        </div>
+        ${crs.length ? crs.map(c=>`<div class="list-row">${cdot(c)}<div class="grow"><b class="small">${esc(c.title)}</b><div class="tiny muted">${fmtSched(c.schedule)}</div></div></div>`).join("") : `<div class="empty">Not enrolled yet — browse classes to get started.</div>`}
+        ${latest?`<div class="tiny" style="margin-top:10px;background:var(--surface2);border-radius:9px;padding:9px 12px"><span class="stars">${starStr(latest.score)}</span> ${esc(latest.note.slice(0,90))}${latest.note.length>90?"…":""}<div class="muted" style="margin-top:2px">${esc((course(latest.courseId)||{}).title||"")} · ${ago(latest.ts)}</div></div>`:""}
+        ${(()=>{const s=attSummary(attOf(k.id)); return s.rate==null?"":`<div class="tiny muted" style="margin-top:8px">Attendance <b style="color:var(--ink)" class="num">${s.rate}%</b> · ${s.ab} absence${s.ab===1?"":"s"}${s.l?` · ${s.l} late`:""}</div>`;})()}
+      </div>`;
+    }).join("")}
+    <div class="card card-pad">
+      <div class="eyebrow">Quick actions</div>
+      <div style="display:flex;flex-direction:column;gap:9px;margin-top:12px">
+        <button class="btn btn-primary" data-act="go" data-arg="browse">Browse classes</button>
+        <button class="btn btn-ghost" data-act="go" data-arg="children">Add a child</button>
+        <button class="btn btn-ghost" data-act="go" data-arg="payments">View payments</button>
+      </div>
+    </div>
+  </div>
+  <h2 class="section-title">Latest updates from teachers</h2>
+  <div class="card card-pad">
+    ${feed.length ? feed.map(p=>{
+      const k=user(p.childId), c=course(p.courseId), t=user(p.teacherId);
+      return `<div class="list-row"><span class="avatar" style="width:34px;height:34px;font-size:12px">${initials(t?t.name:"?")}</span>
+        <div class="grow"><b class="small">${esc(k?k.name:"")} · ${esc(c?c.title:"")}</b> <span class="stars tiny">${starStr(p.score)}</span>
+        <div class="small muted">${esc(p.note)}</div><div class="tiny" style="color:var(--ink3)">${esc(t?t.name:"")} · ${ago(p.ts)}</div></div></div>`;
+    }).join("") : `<div class="empty">No updates yet.</div>`}
+  </div>`;
+};
+
+VIEWS["parent/browse"] = (me, sess) => {
+  if(sess.courseId) return courseDetail(me, sess);
+  const q = (sess.q||"").toLowerCase();
+  const list = S.courses.filter(c=>c.status==="active").filter(c=>!q || (c.title+" "+c.subject+" "+(user(c.teacherId)||{name:""}).name).toLowerCase().includes(q));
+  return pageHead("Browse classes","Every class runs weekly at the academy. Enrol any of your children.") + `
+  <div class="field" style="max-width:340px"><input placeholder="Search classes, subjects, teachers…" value="${esc(sess.q||"")}" data-input="search"></div>
+  <div class="grid3">
+    ${list.map(c=>courseCard(c, `<button class="btn btn-primary btn-sm" data-act="openCourse" data-arg="${c.id}">View</button>`)).join("")}
+  </div>
+  ${list.length?"":`<div class="empty">No classes match “${esc(sess.q)}”.</div>`}`;
+};
+
+function courseDetail(me, sess){
+  const c = course(sess.courseId);
+  if(!c) return `<div class="empty">Class not found.</div>`;
+  const t = user(c.teacherId);
+  const r = avgRating(c.id);
+  const revs = approvedReviews(c.id);
+  const kids = childrenOf(me.id);
+  const enrolledKids = kids.filter(k=>isEnrolled(c.id, k.id));
+  const roster = rosterForCourse(c.id);
+  return `
+  <button class="btn btn-ghost btn-sm" data-act="closeCourse" style="margin-bottom:16px">← All classes</button>
+  <div class="grid2" style="grid-template-columns:1fr;max-width:760px">
+    <div class="card">
+      <div class="course-band" style="height:72px"><span class="band-mono" style="width:40px;height:40px;font-size:18px">${esc((c.title||"C")[0])}</span><span class="band-subj">${esc(c.subject)}</span></div>
+      <div class="card-pad">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px"><span class="chip chip-primary">${esc(c.subject)}</span><span class="chip chip-muted">${roster.length} student${roster.length===1?"":"s"} enrolled</span></div>
+        <h1 style="font-size:26px">${esc(c.title)}</h1>
+        <div class="small" style="margin:6px 0 2px">${r?`<span class="stars">${starStr(r)}</span> <span class="num muted">${r.toFixed(1)} · ${revs.length} review${revs.length===1?"":"s"}</span>`:`<span class="muted">No reviews yet</span>`}</div>
+        <p class="small" style="max-width:62ch">${esc(c.desc)}</p>
+        <div class="list-row"><span style="color:var(--primary)">${icon("calendar")}</span><div class="grow small"><b>Schedule</b><div class="muted">${fmtSched(c.schedule)}</div></div></div>
+        <div class="list-row"><span class="avatar" style="width:36px;height:36px;font-size:13px">${initials(t?t.name:"?")}</span><div class="grow small"><b>${esc(t?t.name:"TBC")}</b> <span class="muted">· ${esc(t?t.subjects:"")}</span><div class="muted">${esc(t?t.bio:"")}</div></div></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;flex-wrap:wrap">
+          <span class="price num" style="font-size:24px">${money(c.price)}<span> /month</span></span>
+          <button class="btn btn-primary" data-act="openEnroll" data-arg="${c.id}">Enrol a child</button>
+        </div>
+        ${enrolledKids.length?`<div class="tiny" style="margin-top:10px"><span class="chip chip-good">✓ Enrolled: ${enrolledKids.map(k=>esc(k.name.split(" ")[0])).join(", ")}</span></div>`:""}
+      </div>
+    </div>
+    <div class="card card-pad">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <h2 style="font-size:18px">Reviews</h2>
+        ${enrolledKids.length?`<button class="btn btn-ghost btn-sm" data-act="openReview" data-arg="${c.id}">Write a review</button>`:`<span class="tiny muted">Enrol to review</span>`}
+      </div>
+      ${revs.length ? revs.map(rv=>`<div class="list-row"><div class="grow">
+          <span class="stars">${starStr(rv.rating)}</span>
+          <div class="small">${esc(rv.text)}</div>
+          <div class="tiny" style="color:var(--ink3)">${esc((user(rv.parentId)||{}).name||"A parent")} · ${fmtDate(rv.ts)}</div>
+        </div></div>`).join("") : `<div class="empty">No reviews yet — be the first.</div>`}
+    </div>
+  </div>`;
+}
+
+VIEWS["parent/children"] = me => {
+  const kids = childrenOf(me.id);
+  return pageHead("My children","Add a child once, then enrol them in any class.") + `
+  <div class="grid2">
+    ${kids.map(k=>`<div class="card card-pad">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="avatar" style="width:42px;height:42px">${initials(k.name)}</span>
+        <div><b>${esc(k.name)}</b><div class="tiny muted">Age ${k.age}</div></div>
+        <span style="flex:1"></span>
+        <button class="btn btn-ghost btn-sm" data-act="goChild" data-arg="${k.id}">View progress</button>
+      </div>
+      <div style="margin-top:8px">${childCourses(k.id).map(c=>`<span class="chip chip-primary" style="margin:3px 4px 0 0">${esc(c.title)}</span>`).join("")||`<span class="tiny muted">No classes yet</span>`}</div>
+    </div>`).join("")}
+    <div class="card card-pad">
+      <h3 style="font-size:16px;margin-bottom:12px">Add a child</h3>
+      <form data-form="addChild">
+        <div class="field"><label>Full name</label><input name="name" required placeholder="e.g. Noah Ahmed"></div>
+        <div class="field"><label>Age</label><input name="age" type="number" min="4" max="18" required placeholder="e.g. 8"></div>
+        <button class="btn btn-primary" type="submit">Add child</button>
+      </form>
+    </div>
+  </div>`;
+};
+
+VIEWS["parent/childview"] = (me, sess) => {
+  const k = user(sess.childId);
+  if(!k) return `<div class="empty">Not found.</div>`;
+  const prog = S.progress.filter(p=>p.childId===k.id).sort((a,b)=>b.ts-a.ts);
+  const att = attOf(k.id).sort((a,b)=>a.date<b.date?1:-1);
+  const sum = attSummary(att);
+  return `<button class="btn btn-ghost btn-sm" data-act="go" data-arg="children" style="margin-bottom:16px">← My children</button>` +
+  pageHead(esc(k.name), `Age ${k.age} · ${childCourses(k.id).length} class(es)`) + `
+  <div class="card card-pad" style="max-width:720px;margin-bottom:18px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <h2 style="font-size:17px">Attendance</h2>
+      ${sum.rate==null?"":`<span class="small muted num"><b style="color:var(--ink)">${sum.rate}%</b> · ${sum.p} present · ${sum.l} late · ${sum.ab} absent</span>`}
+    </div>
+    ${att.length?`<div class="tablewrap" style="margin-top:8px"><table>
+      <thead><tr><th>Date</th><th>Class</th><th>Status</th></tr></thead>
+      <tbody>${att.slice(0,6).map(a=>`<tr><td class="num">${fmtDateStr(a.date)}</td><td>${esc((course(a.courseId)||{}).title||"—")}</td><td>${ATT_CHIP[a.status]||""}</td></tr>`).join("")}</tbody>
+    </table></div>`:`<div class="empty">No attendance records yet — they appear as soon as a teacher takes the register.</div>`}
+  </div>
+  <div class="card card-pad" style="max-width:720px">
+    <h2 style="font-size:17px;margin-bottom:14px">Progress timeline</h2>
+    ${prog.length?`<div class="timeline">${prog.map(p=>{
+      const c=course(p.courseId), t=user(p.teacherId);
+      return `<div class="tl-item"><b class="small">${esc(c?c.title:"")}</b> <span class="stars tiny">${starStr(p.score)}</span>
+        <div class="small muted">${esc(p.note)}</div>
+        <div class="tiny" style="color:var(--ink3)">${esc(t?t.name:"")} · ${fmtDate(p.ts)}</div></div>`;
+    }).join("")}</div>`:`<div class="empty">No progress updates yet. They’ll appear here as soon as a teacher posts one.</div>`}
+  </div>`;
+};
+
+VIEWS["parent/payments"] = me => {
+  const rows = S.payments.filter(p=>p.parentId===me.id).sort((a,b)=>b.ts-a.ts);
+  const total = rows.filter(p=>p.status==="paid").reduce((a,p)=>a+p.amount,0);
+  return pageHead("Payments", `You’ve paid ${money(total)} in total. All payments in this demo are simulated.`) + `
+  <div class="card tablewrap"><table>
+    <thead><tr><th>Invoice</th><th>Date</th><th>Class</th><th>Child</th><th>Amount</th><th>Status</th><th></th></tr></thead>
+    <tbody>${rows.map(p=>`<tr>
+      <td class="num"><b>${esc(p.invoiceNo||"—")}</b></td>
+      <td class="num">${fmtDate(p.ts)}</td>
+      <td>${esc((course(p.courseId)||{}).title||"—")}</td>
+      <td>${esc((user(p.childId)||{}).name||"—")}</td>
+      <td class="num"><b>${money(p.amount)}</b></td>
+      <td>${p.status==="paid"?`<span class="chip chip-good">Paid</span>`:`<span class="chip chip-bad">Refunded</span>`}</td>
+      <td><button class="btn btn-ghost btn-sm" data-act="invoice" data-arg="${p.id}">Invoice</button></td>
+    </tr>`).join("")||`<tr><td colspan="7"><div class="empty">No payments yet.</div></td></tr>`}</tbody>
+  </table></div>`;
+};
+
+/* ---------------- CHILD ---------------- */
+function nextSessionsFor(courses, limit){
+  const today = new Date().getDay();
+  const out = [];
+  courses.forEach(c=>c.schedule.forEach(s=>{
+    let offset = (DAYS.indexOf(s.day) - today + 7) % 7;
+    out.push({course:c, day:s.day, time:s.time, offset});
+  }));
+  out.sort((a,b)=> a.offset-b.offset || a.time.localeCompare(b.time));
+  return out.slice(0, limit||3);
+}
+
+VIEWS["child/dashboard"] = me => {
+  const crs = childCourses(me.id);
+  const next = nextSessionsFor(crs, 3);
+  const prog = S.progress.filter(p=>p.childId===me.id).sort((a,b)=>b.ts-a.ts).slice(0,3);
+  const starsEarned = S.progress.filter(p=>p.childId===me.id).reduce((a,p)=>a+p.score,0);
+  return pageHead(`Hi ${esc(me.name.split(" ")[0])}! 👋`,"Here’s what’s coming up for you.") + `
+  <div class="stat-row">
+    ${statCard("book","My classes",crs.length)}
+    ${statCard("star","Stars earned",starsEarned,"from teacher updates")}
+    ${statCard("clip","Attendance",attSummary(attOf(me.id)).rate==null?"—":attSummary(attOf(me.id)).rate+"%","this term")}
+    ${statCard("calendar","Next class",`<span style="font-size:19px">${next.length?(next[0].offset===0?"Today":next[0].offset===1?"Tomorrow":next[0].day)+" "+fmtTime(next[0].time):"—"}</span>`,next.length?esc(next[0].course.title):"")}
+  </div>
+  <h2 class="section-title">Coming up</h2>
+  ${next.length?next.map(n=>`<div class="sess"><span class="sess-time num">${n.offset===0?"Today":n.offset===1?"Tmrw":n.day} ${fmtTime(n.time)}</span>${cdot(n.course)}<div class="grow"><b class="small">${esc(n.course.title)}</b><div class="tiny muted">with ${esc((user(n.course.teacherId)||{}).name||"")}</div></div></div>`).join(""):`<div class="empty">No classes yet — ask a parent to enrol you!</div>`}
+  <h2 class="section-title">Recent feedback from my teachers</h2>
+  <div class="card card-pad">
+    ${prog.length?prog.map(p=>`<div class="list-row">${cdot(course(p.courseId))}<div class="grow"><b class="small">${esc((course(p.courseId)||{}).title||"")}</b> <span class="stars tiny">${starStr(p.score)}</span><div class="small muted">${esc(p.note)}</div><div class="tiny" style="color:var(--ink3)">${ago(p.ts)}</div></div></div>`).join(""):`<div class="empty">Nothing yet — your teachers will post updates here.</div>`}
+  </div>`;
+};
+
+VIEWS["child/myclasses"] = me => {
+  const crs = childCourses(me.id);
+  return pageHead("My classes","") + `<div class="grid3">${crs.map(c=>courseCard(c,"")).join("")||`<div class="empty">No classes yet.</div>`}</div>`;
+};
+
+function scheduleView(courses){
+  const order = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  const sess = [];
+  courses.forEach(c=>c.schedule.forEach(s=>sess.push({c, day:s.day, time:s.time})));
+  if(!sess.length) return `<div class="empty">Nothing scheduled yet.</div>`;
+  const times = [...new Set(sess.map(s=>s.time))].sort();
+  const todayName = DAYS[new Date().getDay()];
+  const cell = (d,t) => sess.filter(s=>s.day===d && s.time===t).map(s=>{
+    const n = rosterForCourse(s.c.id).length;
+    return `<div class="tt-item"><b>${esc(s.c.title)}</b><span>${esc((user(s.c.teacherId)||{}).name||"")} · ${n} student${n===1?"":"s"}</span></div>`;
+  }).join("");
+  return `<div class="card tablewrap"><table class="timetable">
+    <thead><tr><th>Time</th>${order.map(d=>`<th class="${d===todayName?"tt-today":""}">${d}${d===todayName?" · today":""}</th>`).join("")}</tr></thead>
+    <tbody>${times.map(t=>`<tr><td class="tt-time num">${fmtTime(t)}</td>${order.map(d=>`<td class="${d===todayName?"tt-col-today":""}">${cell(d,t)}</td>`).join("")}</tr>`).join("")}</tbody>
+  </table></div>`;
+}
+VIEWS["child/schedule"] = me => pageHead("My week","") + scheduleView(childCourses(me.id));
+VIEWS["child/progress"] = me => {
+  const prog = S.progress.filter(p=>p.childId===me.id).sort((a,b)=>b.ts-a.ts);
+  return pageHead("My progress","Every update your teachers have posted.") + `
+  <div class="card card-pad" style="max-width:720px">
+    ${prog.length?`<div class="timeline">${prog.map(p=>`<div class="tl-item"><b class="small">${esc((course(p.courseId)||{}).title||"")}</b> <span class="stars tiny">${starStr(p.score)}</span><div class="small muted">${esc(p.note)}</div><div class="tiny" style="color:var(--ink3)">${fmtDate(p.ts)}</div></div>`).join("")}</div>`:`<div class="empty">No updates yet.</div>`}
+  </div>`;
+};
+
+/* ---------------- TEACHER ---------------- */
+VIEWS["teacher/dashboard"] = me => {
+  if(me.status==="pending") return `
+    ${pageHead("Almost there!","")}
+    <div class="card card-pad" style="max-width:560px">
+      <span class="chip chip-warn">Awaiting approval</span>
+      <p class="small" style="margin-top:12px">Your teacher account is waiting for the academy admin to approve it. Once approved, your classes go live for parents to book.<br><br><span class="muted">Demo tip: sign in as <b>Alex Morgan (Admin)</b> in another window and approve “${esc(me.name)}” under Users → Teachers — then watch this page update.</span></p>
+    </div>`;
+  const crs = coursesOfTeacher(me.id);
+  const studentCount = new Set(crs.flatMap(c=>rosterForCourse(c.id).map(e=>e.childId))).size;
+  const next = nextSessionsFor(crs, 3);
+  const myRevs = S.reviews.filter(r=>r.status==="approved" && crs.some(c=>c.id===r.courseId)).sort((a,b)=>b.ts-a.ts).slice(0,2);
+  return pageHead(`Hello, ${esc(me.name.split(" ")[0])}`,"Your classes at a glance.") + `
+  <div class="stat-row">
+    ${statCard("book","Classes",crs.length)}
+    ${statCard("grad","Students",studentCount)}
+    ${statCard("calendar","Next session",`<span style="font-size:19px">${next.length?(next[0].offset===0?"Today":next[0].offset===1?"Tomorrow":next[0].day)+" "+fmtTime(next[0].time):"—"}</span>`,next.length?esc(next[0].course.title):"")}
+  </div>
+  <div style="margin-bottom:18px"><button class="btn btn-primary" data-act="openProgress">＋ Post a progress update</button></div>
+  <h2 class="section-title">Coming up</h2>
+  ${next.map(n=>`<div class="sess"><span class="sess-time num">${n.offset===0?"Today":n.offset===1?"Tmrw":n.day} ${fmtTime(n.time)}</span>${cdot(n.course)}<div class="grow"><b class="small">${esc(n.course.title)}</b><div class="tiny muted">${rosterForCourse(n.course.id).length} student${rosterForCourse(n.course.id).length===1?"":"s"}</div></div></div>`).join("")||`<div class="empty">No sessions scheduled.</div>`}
+  <h2 class="section-title">Latest reviews of your classes</h2>
+  <div class="card card-pad">
+    ${myRevs.length?myRevs.map(rv=>`<div class="list-row"><div class="grow"><span class="stars">${starStr(rv.rating)}</span> <b class="small">${esc((course(rv.courseId)||{}).title||"")}</b><div class="small muted">${esc(rv.text)}</div></div></div>`).join(""):`<div class="empty">No published reviews yet.</div>`}
+  </div>`;
+};
+
+VIEWS["teacher/classes"] = me => {
+  const crs = coursesOfTeacher(me.id);
+  return pageHead("My classes","") + `
+  ${crs.map(c=>{
+    const roster = rosterForCourse(c.id);
+    return `<div class="card card-pad" style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:11px;flex-wrap:wrap">
+        ${cdot(c)}
+        <div><b>${esc(c.title)}</b><div class="tiny muted">${fmtSched(c.schedule)} · ${money(c.price)}/mo</div></div>
+        <span style="flex:1"></span><span class="chip chip-muted">${roster.length} student${roster.length===1?"":"s"}</span>
+      </div>
+      ${roster.map(e=>{const k=user(e.childId);return `<div class="list-row"><span class="avatar" style="width:32px;height:32px;font-size:12px">${initials(k?k.name:"?")}</span><div class="grow small"><b>${esc(k?k.name:"")}</b> <span class="muted">· age ${k?k.age:"?"} · joined ${fmtDate(e.ts)}</span></div><button class="btn btn-ghost btn-sm" data-act="openProgressFor" data-arg="${e.childId}|${c.id}">＋ Update</button></div>`;}).join("")||`<div class="empty">No students yet.</div>`}
+    </div>`;
+  }).join("")||`<div class="empty">No classes assigned. The admin can assign you one under Classes.</div>`}`;
+};
+
+VIEWS["teacher/students"] = me => {
+  const crs = coursesOfTeacher(me.id);
+  const pairs = crs.flatMap(c=>rosterForCourse(c.id).map(e=>({e, c})));
+  return pageHead("Students", `${pairs.length} enrolment${pairs.length===1?"":"s"} across your classes.`,
+    `<button class="btn btn-primary" data-act="openProgress">＋ Post progress update</button>`) + `
+  <div class="card tablewrap"><table>
+    <thead><tr><th>Student</th><th>Class</th><th>Parent</th><th>Last update</th><th></th></tr></thead>
+    <tbody>${pairs.map(({e,c})=>{
+      const k=user(e.childId); const par=user(k?k.parentId:"");
+      const last = S.progress.filter(p=>p.childId===e.childId && p.courseId===c.id).sort((a,b)=>b.ts-a.ts)[0];
+      return `<tr><td><b>${esc(k?k.name:"")}</b> <span class="muted tiny">age ${k?k.age:"?"}</span></td>
+        <td>${esc(c.title)}</td><td class="muted">${esc(par?par.name:"—")}</td>
+        <td class="muted">${last?ago(last.ts):"never"}</td>
+        <td><button class="btn btn-ghost btn-sm" data-act="openProgressFor" data-arg="${e.childId}|${c.id}">＋ Update</button></td></tr>`;
+    }).join("")||`<tr><td colspan="5"><div class="empty">No students yet.</div></td></tr>`}</tbody>
+  </table></div>`;
+};
+
+VIEWS["teacher/attendance"] = (me, sess) => {
+  const crs = coursesOfTeacher(me.id);
+  if(!crs.length) return pageHead("Attendance register","") + `<div class="empty">No classes assigned yet.</div>`;
+  const selId = (sess.attClass && crs.some(c=>c.id===sess.attClass)) ? sess.attClass : crs[0].id;
+  const date = sess.attDate || new Date().toISOString().slice(0,10);
+  const roster = rosterForCourse(selId);
+  const recFor = kid => (S.attendance||[]).find(a=>a.courseId===selId && a.childId===kid && a.date===date);
+  const marked = roster.filter(e=>recFor(e.childId)).length;
+  return pageHead("Attendance register","Pick a class and date, then mark each student. Parents are notified of absences and late arrivals.") + `
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center">
+    ${crs.map(x=>`<button class="btn btn-sm ${x.id===selId?"btn-primary":"btn-ghost"}" data-act="attClass" data-arg="${x.id}">${esc(x.title)}</button>`).join("")}
+    <input type="date" value="${date}" data-input="attdate" style="width:auto" aria-label="Register date">
+  </div>
+  <div class="card tablewrap"><table>
+    <thead><tr><th>Student</th><th>Age</th><th>Attendance history</th><th>Mark · ${fmtDateStr(date)}</th></tr></thead>
+    <tbody>${roster.map(e=>{
+      const k = user(e.childId); const rec = recFor(e.childId);
+      const hist = attSummary((S.attendance||[]).filter(a=>a.childId===e.childId && a.courseId===selId));
+      const b = (st,label,onCls) => `<button class="btn btn-sm ${rec&&rec.status===st?onCls:"btn-ghost"}" data-act="markAtt" data-arg="${e.childId}|${selId}|${date}|${st}">${label}</button>`;
+      return `<tr><td><b>${esc(k?k.name:"")}</b></td><td class="num">${k?k.age:""}</td>
+        <td class="muted tiny num">${hist.rate==null?"No records":hist.rate+"% · "+hist.ab+" absence"+(hist.ab===1?"":"s")}</td>
+        <td><div style="display:flex;gap:6px;flex-wrap:wrap">${b("present","Present","btn-good")}${b("late","Late","btn-warnful")}${b("absent","Absent","btn-bad")}</div></td></tr>`;
+    }).join("")||`<tr><td colspan="4"><div class="empty">No students enrolled in this class.</div></td></tr>`}</tbody>
+  </table></div>
+  <p class="tiny muted" style="margin-top:10px">${marked} of ${roster.length} marked for ${fmtDateStr(date)}. Changes save instantly and appear on parent, student and admin views.</p>`;
+};
+
+VIEWS["teacher/schedule"] = me => pageHead("My week","") + scheduleView(coursesOfTeacher(me.id));
+
+VIEWS["teacher/profile"] = me => pageHead("My profile","Parents see this on your class pages.") + `
+  <div class="card card-pad" style="max-width:560px">
+    <form data-form="saveProfile">
+      <div class="field"><label>Full name</label><input name="name" required value="${esc(me.name)}"></div>
+      <div class="field"><label>Subjects</label><input name="subjects" required value="${esc(me.subjects||"")}"></div>
+      <div class="field"><label>Bio</label><textarea name="bio" rows="4">${esc(me.bio||"")}</textarea></div>
+      <button class="btn btn-primary" type="submit">Save profile</button>
+    </form>
+  </div>`;
+
+/* ---------------- ADMIN ---------------- */
+function monthKey(ts){ const d=new Date(ts); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); }
+function monthLabel(k){ const [y,m]=k.split("-"); return new Date(y, m-1, 1).toLocaleDateString(undefined,{month:"short"}); }
+function revenueByMonth(n){
+  const out=[]; const d=new Date(); d.setDate(1);
+  for(let i=n-1;i>=0;i--){ const dd=new Date(d.getFullYear(), d.getMonth()-i, 1); out.push({key:monthKey(dd.getTime()), label:monthLabel(monthKey(dd.getTime())), value:0}); }
+  S.payments.filter(p=>p.status==="paid").forEach(p=>{ const row=out.find(r=>r.key===monthKey(p.ts)); if(row) row.value+=p.amount; });
+  return out;
+}
+function barChart(rows, fmt){
+  const max = Math.max(1, ...rows.map(r=>r.value));
+  return `<div class="barchart">${rows.map(r=>`<div class="bar-row">
+    <span class="muted">${esc(r.label)}</span>
+    <span class="bar-track"><span class="bar-fill" style="width:${Math.round(r.value/max*100)}%"></span></span>
+    <span class="bar-val">${fmt(r.value)}</span></div>`).join("")}</div>`;
+}
+
+VIEWS["admin/dashboard"] = me => {
+  const rev = revenueByMonth(6);
+  const thisMonth = rev[rev.length-1].value;
+  const students = S.users.filter(u=>u.role==="child").length;
+  const pendingRevs = S.reviews.filter(r=>r.status==="pending").length;
+  const pendingTeachers = S.users.filter(u=>u.role==="teacher"&&u.status==="pending").length;
+  const openCmp = (S.complaints||[]).filter(c=>c.status!=="resolved").length;
+  const activity = S.events.slice(0,6);
+  return pageHead("Academy overview", "Everything happening across Brightway, live.") + `
+  <div class="stat-row">
+    ${statCard("dollar","Revenue · this month",money(thisMonth))}
+    ${statCard("grad","Active enrolments",S.enrollments.length,students+" students")}
+    ${statCard("book","Classes",S.courses.filter(c=>c.status==="active").length,S.users.filter(u=>u.role==="teacher"&&u.status==="active").length+" active teachers")}
+    ${statCard("alert","Needs attention",pendingRevs+pendingTeachers+openCmp,pendingRevs+" review"+(pendingRevs===1?"":"s")+" · "+pendingTeachers+" teacher"+(pendingTeachers===1?"":"s")+" · "+openCmp+" complaint"+(openCmp===1?"":"s"))}
+  </div>
+  <div class="grid2">
+    <div class="card card-pad">
+      <div class="eyebrow" style="margin-bottom:12px">Revenue · last 6 months</div>
+      ${barChart(rev, v=>money(v))}
+    </div>
+    <div class="card card-pad">
+      <div class="eyebrow" style="margin-bottom:6px">Recent activity</div>
+      ${activity.length?activity.map(ev=>`<div class="list-row"><span>${ev.icon}</span><div class="grow small">${esc(ev.text)}<div class="tiny" style="color:var(--ink3)">${ago(ev.ts)}</div></div></div>`).join(""):`<div class="empty">Quiet so far.</div>`}
+    </div>
+  </div>`;
+};
+
+VIEWS["admin/users"] = (me, sess) => {
+  const tab = sess.tab || "teachers";
+  const tabs = [["teachers","Teachers"],["parents","Parents"],["children","Students"]];
+  let body = "";
+  if(tab==="teachers"){
+    body = `<div class="card tablewrap"><table><thead><tr><th>Teacher</th><th>Subjects</th><th>Classes</th><th>Status</th><th></th></tr></thead><tbody>
+    ${S.users.filter(u=>u.role==="teacher").map(t=>`<tr>
+      <td><b>${esc(t.name)}</b><div class="tiny muted">${esc(t.email)}</div></td>
+      <td class="muted">${esc(t.subjects||"")}</td>
+      <td class="num">${coursesOfTeacher(t.id).length}</td>
+      <td>${t.status==="active"?`<span class="chip chip-good">Active</span>`:`<span class="chip chip-warn">Pending</span>`}</td>
+      <td>${t.status==="pending"?`<button class="btn btn-primary btn-sm" data-act="approveTeacher" data-arg="${t.id}">Approve</button>`:""}</td>
+    </tr>`).join("")}</tbody></table></div>`;
+  } else if(tab==="parents"){
+    body = `<div class="card tablewrap"><table><thead><tr><th>Parent</th><th>Children</th><th>Enrolments</th><th>Lifetime paid</th></tr></thead><tbody>
+    ${S.users.filter(u=>u.role==="parent").map(p=>{
+      const kids=childrenOf(p.id);
+      const paid=S.payments.filter(x=>x.parentId===p.id&&x.status==="paid").reduce((a,x)=>a+x.amount,0);
+      return `<tr><td><b>${esc(p.name)}</b><div class="tiny muted">${esc(p.email)}</div></td>
+      <td class="muted">${kids.map(k=>esc(k.name.split(" ")[0])).join(", ")||"—"}</td>
+      <td class="num">${S.enrollments.filter(e=>e.parentId===p.id).length}</td>
+      <td class="num"><b>${money(paid)}</b></td></tr>`;
+    }).join("")}</tbody></table></div>`;
+  } else {
+    body = `<div class="card tablewrap"><table><thead><tr><th>Student</th><th>Age</th><th>Parent</th><th>Classes</th></tr></thead><tbody>
+    ${S.users.filter(u=>u.role==="child").map(k=>`<tr><td><b>${esc(k.name)}</b></td><td class="num">${k.age}</td>
+      <td class="muted">${esc((user(k.parentId)||{}).name||"—")}</td>
+      <td class="muted">${childCourses(k.id).map(c=>esc(c.title)).join(", ")||"—"}</td></tr>`).join("")}</tbody></table></div>`;
+  }
+  return pageHead("Users","Approve teachers, add people, and see every family at a glance.",
+    `<button class="btn btn-primary" data-act="openAddUser">＋ Add user</button>`) + `
+  <div style="display:flex;gap:8px;margin-bottom:16px">${tabs.map(([k,l])=>`<button class="btn btn-sm ${tab===k?"btn-primary":"btn-ghost"}" data-act="userTab" data-arg="${k}">${l}</button>`).join("")}</div>` + body;
+};
+
+VIEWS["admin/courses"] = me => pageHead("Classes","Add a class and it appears for parents instantly.") + `
+  <div class="grid2" style="grid-template-columns:1.4fr 1fr;align-items:start">
+    <div class="card tablewrap"><table><thead><tr><th>Class</th><th>Teacher</th><th>Price</th><th>Enrolled</th><th>Status</th><th></th></tr></thead><tbody>
+      ${S.courses.map(c=>`<tr>
+        <td><b>${esc(c.title)}</b><div class="tiny muted">${fmtSched(c.schedule)}</div></td>
+        <td class="muted">${esc((user(c.teacherId)||{}).name||"—")}</td>
+        <td class="num">${money(c.price)}</td>
+        <td class="num">${rosterForCourse(c.id).length}</td>
+        <td>${c.status==="active"?`<span class="chip chip-good">Active</span>`:`<span class="chip chip-muted">Draft</span>`}</td>
+        <td><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" data-act="editCourse" data-arg="${c.id}">Edit</button><button class="btn btn-ghost btn-sm" data-act="toggleCourse" data-arg="${c.id}">${c.status==="active"?"Unpublish":"Publish"}</button></div></td>
+      </tr>`).join("")}</tbody></table></div>
+    <div class="card card-pad">
+      <h3 style="font-size:16px;margin-bottom:12px">Add a class</h3>
+      <form data-form="addCourse">
+        <div class="field"><label>Title</label><input name="title" required placeholder="e.g. Chess Club"></div>
+        <div class="field"><label>Subject</label><input name="subject" required placeholder="e.g. Games"></div>
+        <div class="field"><label>Teacher</label><select name="teacherId">${S.users.filter(u=>u.role==="teacher"&&u.status==="active").map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join("")}</select></div>
+        <div class="field-row">
+          <div class="field"><label>Price / month</label><input name="price" type="number" min="1" required placeholder="100"></div>
+          <div class="field"><label>Day</label><select name="day">${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(d=>`<option>${d}</option>`).join("")}</select></div>
+          <div class="field"><label>Time</label><input name="time" type="time" value="16:00" required></div>
+        </div>
+        <div class="field"><label>Description</label><textarea name="desc" rows="3" placeholder="What will kids learn?"></textarea></div>
+        <button class="btn btn-primary" type="submit">Add class</button>
+      </form>
+    </div>
+  </div>`;
+
+VIEWS["admin/payments"] = me => {
+  const rows = S.payments.slice().sort((a,b)=>b.ts-a.ts);
+  const total = rows.filter(p=>p.status==="paid").reduce((a,p)=>a+p.amount,0);
+  return pageHead("Payments", `${money(total)} collected all-time · every payment here is simulated.`,
+    `<button class="btn btn-primary" data-act="openRecordPay">＋ Record payment</button>`) + `
+  <div class="card tablewrap"><table>
+    <thead><tr><th>Date</th><th>Parent</th><th>Child</th><th>Class</th><th>Amount</th><th>Status</th><th></th></tr></thead>
+    <tbody>${rows.map(p=>`<tr>
+      <td class="num">${fmtDate(p.ts)}</td>
+      <td>${esc((user(p.parentId)||{}).name||"—")}</td>
+      <td class="muted">${esc((user(p.childId)||{}).name||"—")}</td>
+      <td>${esc((course(p.courseId)||{}).title||"—")}</td>
+      <td class="num"><b>${money(p.amount)}</b></td>
+      <td>${p.status==="paid"?`<span class="chip chip-good">Paid</span>`:`<span class="chip chip-bad">Refunded</span>`}</td>
+      <td><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" data-act="invoice" data-arg="${p.id}">Invoice</button>${p.status==="paid"?`<button class="btn btn-ghost btn-sm" data-act="refund" data-arg="${p.id}">Refund</button>`:""}</div></td>
+    </tr>`).join("")}</tbody>
+  </table></div>`;
+};
+
+VIEWS["admin/reviews"] = me => {
+  const pending = S.reviews.filter(r=>r.status==="pending");
+  const done = S.reviews.filter(r=>r.status!=="pending").sort((a,b)=>b.ts-a.ts);
+  const rvRow = rv => `<div class="list-row"><div class="grow">
+      <span class="stars">${starStr(rv.rating)}</span> <b class="small">${esc((course(rv.courseId)||{}).title||"")}</b>
+      <div class="small muted">${esc(rv.text)}</div>
+      <div class="tiny" style="color:var(--ink3)">${esc((user(rv.parentId)||{}).name||"")} · ${fmtDate(rv.ts)}</div></div>`;
+  return pageHead("Reviews","Approve a review and it publishes to the class page for all parents.") + `
+  <h2 class="section-title">Awaiting approval ${pending.length?`<span class="chip chip-warn">${pending.length}</span>`:""}</h2>
+  <div class="card card-pad">
+    ${pending.length?pending.map(rv=>rvRow(rv)+`<div style="display:flex;gap:8px"><button class="btn btn-primary btn-sm" data-act="reviewSet" data-arg="${rv.id}|approved">Approve</button><button class="btn btn-danger btn-sm" data-act="reviewSet" data-arg="${rv.id}|rejected">Reject</button></div></div>`).join(""):`<div class="empty">Queue is clear. 🎉</div>`}
+  </div>
+  <h2 class="section-title">Handled</h2>
+  <div class="card card-pad">
+    ${done.length?done.map(rv=>rvRow(rv)+`<span class="chip ${rv.status==="approved"?"chip-good":"chip-bad"}">${rv.status}</span></div>`).join(""):`<div class="empty">Nothing yet.</div>`}
+  </div>`;
+};
+
+VIEWS["admin/reports"] = me => {
+  const rev = revenueByMonth(6);
+  const perCourse = S.courses.map(c=>({label:c.title.length>18?c.title.slice(0,17)+"…":c.title, value:rosterForCourse(c.id).length})).sort((a,b)=>b.value-a.value);
+  const attPerCourse = S.courses.map(c=>{
+    const rows=(S.attendance||[]).filter(a=>a.courseId===c.id);
+    const ok=rows.filter(a=>a.status!=="absent").length;
+    return {label:c.title.length>18?c.title.slice(0,17)+"…":c.title, value:rows.length?Math.round(ok/rows.length*100):null};
+  }).filter(x=>x.value!=null).sort((a,b)=>b.value-a.value);
+  const ratings = S.courses.map(c=>({c, r:avgRating(c.id)})).filter(x=>x.r);
+  return pageHead("Reports","A snapshot of how the academy is performing.") + `
+  <div class="grid2">
+    <div class="card card-pad"><div class="eyebrow" style="margin-bottom:12px">Revenue · last 6 months</div>${barChart(rev, v=>money(v))}</div>
+    <div class="card card-pad"><div class="eyebrow" style="margin-bottom:12px">Enrolments by class</div>${barChart(perCourse, v=>String(v))}</div>
+    <div class="card card-pad"><div class="eyebrow" style="margin-bottom:12px">Attendance rate by class</div>${attPerCourse.length?barChart(attPerCourse, v=>v+"%"):`<div class="empty">No attendance records yet.</div>`}</div>
+    <div class="card card-pad"><div class="eyebrow" style="margin-bottom:10px">Class ratings</div>
+      ${ratings.length?ratings.map(({c,r})=>`<div class="list-row">${cdot(c)}<div class="grow small"><b>${esc(c.title)}</b></div><span class="stars">${starStr(r)}</span><span class="tiny muted num">${r.toFixed(1)}</span></div>`).join(""):`<div class="empty">No approved reviews yet.</div>`}
+    </div>
+    <div class="card card-pad"><div class="eyebrow" style="margin-bottom:10px">Demo controls</div>
+      <p class="small muted">Put everything back to the starting state before or after a walkthrough.</p>
+      <button class="btn btn-danger" data-act="resetDemo">Reset demo data</button>
+    </div>
+  </div>`;
+};
+
+/* ---------------- SHARED: notifications ---------------- */
+function notificationsView(){
+  const evs = myEvents();
+  sessionStorage.setItem("bw-seen", String(Date.now()));
+  return pageHead("Notifications","Everything that involves you, newest first.") + `
+  <div class="card card-pad" style="max-width:760px">
+    ${evs.length?evs.map(ev=>`<div class="list-row"><span style="font-size:17px">${ev.icon}</span><div class="grow small">${esc(ev.text)}<div class="tiny" style="color:var(--ink3)">${ago(ev.ts)}</div></div></div>`).join(""):`<div class="empty">Nothing yet — activity that involves you will appear here.</div>`}
+  </div>`;
+}
+["parent","child","teacher","admin"].forEach(r=>VIEWS[r+"/notifications"]=notificationsView);
+VIEWS["admin/notifications"] = me => pageHead("Notifications & announcements","Send a notice to everyone, a group, or one person — it lands in their notification bell instantly.") + `
+  <div class="grid2" style="align-items:start">
+    <div class="card card-pad">
+      <h3 style="font-size:16px;margin-bottom:12px">Send announcement</h3>
+      <form data-form="announce">
+        <div class="field"><label>Audience</label>
+          <select name="audience">
+            <option value="all">Everyone</option>
+            <option value="role:parent">All parents</option>
+            <option value="role:teacher">All teachers</option>
+            <option value="role:child">All students</option>
+            ${S.users.filter(u=>u.role!=="admin").map(u=>`<option value="user:${u.id}">${esc(u.name)} (${ROLE_LABEL[u.role]})</option>`).join("")}
+          </select>
+        </div>
+        <div class="field"><label>Message</label><textarea name="text" rows="3" required placeholder="e.g. The academy is closed next Monday for a public holiday."></textarea></div>
+        <button class="btn btn-primary" type="submit">Send announcement</button>
+      </form>
+    </div>
+    <div class="card card-pad">
+      <h3 style="font-size:16px;margin-bottom:6px">Recent activity</h3>
+      ${S.events.slice(0,10).map(ev=>`<div class="list-row"><span style="font-size:17px">${ev.icon}</span><div class="grow small">${esc(ev.text)}<div class="tiny" style="color:var(--ink3)">${ago(ev.ts)}</div></div></div>`).join("")||`<div class="empty">Quiet so far.</div>`}
+    </div>
+  </div>`;
+
+/* ---------------- SHARED: exam date sheet ---------------- */
+function dateSheetView(courseIds, intro){
+  const set = new Set(courseIds);
+  const rows = (S.exams||[]).filter(e=>set.has(e.courseId)).sort((a,b)=>a.date<b.date?-1:1);
+  if(!rows.length) return `<div class="empty">No exams scheduled yet.</div>`;
+  const today = new Date().toISOString().slice(0,10);
+  const soonCut = new Date(Date.now()+7*DAY).toISOString().slice(0,10);
+  return `<div class="card tablewrap"><table>
+    <thead><tr><th>Date</th><th>Time</th><th>Exam</th><th>Class</th><th>Room</th><th></th></tr></thead>
+    <tbody>${rows.map(e=>{
+      const c = course(e.courseId)||{};
+      const past = e.date < today;
+      const soon = !past && e.date <= soonCut;
+      return `<tr${past?' style="opacity:.55"':''}><td class="num"><b>${fmtDateStr(e.date)}</b></td><td class="num">${fmtTime(e.time)}</td>
+        <td><b>${esc(e.title)}</b></td><td class="muted">${esc(c.title||"—")}</td><td class="muted">${esc(e.room||"—")}</td>
+        <td>${past?'<span class="chip chip-muted">Done</span>':soon?'<span class="chip chip-primary">Soon</span>':""}</td></tr>`;
+    }).join("")}</tbody>
+  </table></div>`;
+}
+VIEWS["child/exams"]  = me => pageHead("Exam date sheet","Your upcoming assessments.") + dateSheetView(childCourses(me.id).map(c=>c.id));
+VIEWS["teacher/exams"]= me => pageHead("Exam date sheet","Assessments for your classes. The admin schedules these.") + dateSheetView(coursesOfTeacher(me.id).map(c=>c.id));
+VIEWS["parent/exams"] = me => {
+  const ids = [...new Set(childrenOf(me.id).flatMap(k=>childCourses(k.id).map(c=>c.id)))];
+  return pageHead("Exam date sheet","Upcoming assessments for your children's classes.") + dateSheetView(ids);
+};
+VIEWS["admin/exams"] = me => pageHead("Exams","Schedule an exam and every family and teacher sees it on their date sheet.") + `
+  <div class="grid2" style="grid-template-columns:1.5fr 1fr;align-items:start">
+    <div>${dateSheetView(S.courses.map(c=>c.id))}</div>
+    <div class="card card-pad">
+      <h3 style="font-size:16px;margin-bottom:12px">Schedule an exam</h3>
+      <form data-form="addExam">
+        <div class="field"><label>Exam title</label><input name="title" required placeholder="e.g. Term Assessment"></div>
+        <div class="field"><label>Class</label><select name="courseId">${S.courses.filter(c=>c.status==="active").map(c=>`<option value="${c.id}">${esc(c.title)}</option>`).join("")}</select></div>
+        <div class="field-row">
+          <div class="field"><label>Date</label><input name="date" type="date" required></div>
+          <div class="field"><label>Time</label><input name="time" type="time" value="10:00" required></div>
+        </div>
+        <div class="field"><label>Room</label><input name="room" placeholder="e.g. Room 2"></div>
+        <button class="btn btn-primary" type="submit">Add to date sheet</button>
+      </form>
+    </div>
+  </div>`;
+
+/* ---------------- results ---------------- */
+VIEWS["teacher/results"] = (me, sess) => {
+  const crs = coursesOfTeacher(me.id);
+  const exams = (S.exams||[]).filter(e=>crs.some(c=>c.id===e.courseId)).sort((a,b)=>a.date<b.date?1:-1);
+  if(!exams.length) return pageHead("Results","") + `<div class="empty">No exams scheduled for your classes yet — the admin adds them under Exams.</div>`;
+  const selId = (sess.resExam && exams.some(e=>e.id===sess.resExam)) ? sess.resExam : exams[0].id;
+  const ex = exams.find(e=>e.id===selId);
+  const roster = rosterForCourse(ex.courseId);
+  return pageHead("Enter results", `Marks are out of 100. Grades are automatic (A ≥ 85 · B ≥ 70 · C ≥ 55 · D ≥ 40). Families see results the moment you save.`) + `
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+    ${exams.map(x=>`<button class="btn btn-sm ${x.id===selId?"btn-primary":"btn-ghost"}" data-act="resExam" data-arg="${x.id}">${esc(x.title)} · ${fmtDateStr(x.date)}</button>`).join("")}
+  </div>
+  <div class="card tablewrap"><table>
+    <thead><tr><th>Student</th><th>Marks / 100</th><th>Grade</th><th></th></tr></thead>
+    <tbody>${roster.map(e=>{
+      const k = user(e.childId);
+      const r = (S.results||[]).find(x=>x.examId===selId && x.childId===e.childId);
+      return `<tr><td><b>${esc(k?k.name:"")}</b></td>
+        <td><input type="number" min="0" max="100" value="${r?r.marks:""}" data-res-input="${e.childId}" style="width:92px" aria-label="Marks for ${esc(k?k.name:"")}"></td>
+        <td>${r?gradeChip(r.marks):'<span class="muted tiny">—</span>'}</td>
+        <td><button class="btn btn-sm ${r?"btn-ghost":"btn-primary"}" data-act="saveResult" data-arg="${selId}|${e.childId}">${r?"Update":"Save"}</button></td></tr>`;
+    }).join("")||`<tr><td colspan="4"><div class="empty">No students enrolled in ${esc((course(ex.courseId)||{}).title||"this class")}.</div></td></tr>`}</tbody>
+  </table></div>`;
+};
+function resultsTable(rows, withChild){
+  if(!rows.length) return `<div class="empty">No results published yet.</div>`;
+  return `<div class="card tablewrap"><table>
+    <thead><tr>${withChild?"<th>Child</th>":""}<th>Exam</th><th>Class</th><th>Date</th><th>Marks</th><th>Grade</th></tr></thead>
+    <tbody>${rows.map(r=>{
+      const e = exam(r.examId)||{}; const c = course(e.courseId)||{};
+      return `<tr>${withChild?`<td><b>${esc((user(r.childId)||{}).name||"")}</b></td>`:""}<td><b>${esc(e.title||"—")}</b></td><td class="muted">${esc(c.title||"—")}</td>
+        <td class="num">${e.date?fmtDateStr(e.date):"—"}</td><td class="num"><b>${r.marks}</b> / 100</td><td>${gradeChip(r.marks)}</td></tr>`;
+    }).join("")}</tbody>
+  </table></div>`;
+}
+VIEWS["child/results"] = me => pageHead("My results","") +
+  resultsTable((S.results||[]).filter(r=>r.childId===me.id).sort((a,b)=>b.ts-a.ts), false);
+VIEWS["parent/results"] = me => {
+  const kidIds = childrenOf(me.id).map(k=>k.id);
+  return pageHead("Results","Published results for all your children.") +
+    resultsTable((S.results||[]).filter(r=>kidIds.includes(r.childId)).sort((a,b)=>b.ts-a.ts), true);
+};
+
+/* ---------------- profiles ---------------- */
+VIEWS["parent/profile"] = me => pageHead("My profile","Your contact details are used for invoices and notices.") + `
+  <div class="card card-pad" style="max-width:560px">
+    <form data-form="saveProfile">
+      <div class="field"><label>Full name</label><input name="name" required value="${esc(me.name)}"></div>
+      <div class="field"><label>Email</label><input name="email" type="email" required value="${esc(me.email||"")}"></div>
+      <div class="field"><label>Phone</label><input name="phone" value="${esc(me.phone||"")}" placeholder="+65 ..."></div>
+      <div class="field"><label>Address</label><textarea name="address" rows="2">${esc(me.address||"")}</textarea></div>
+      <button class="btn btn-primary" type="submit">Save profile</button>
+    </form>
+  </div>`;
+VIEWS["admin/profile"] = me => pageHead("My profile","") + `
+  <div class="card card-pad" style="max-width:560px">
+    <form data-form="saveProfile">
+      <div class="field"><label>Full name</label><input name="name" required value="${esc(me.name)}"></div>
+      <div class="field"><label>Email</label><input name="email" type="email" required value="${esc(me.email||"")}"></div>
+      <button class="btn btn-primary" type="submit">Save profile</button>
+    </form>
+  </div>`;
+VIEWS["child/profile"] = me => {
+  const par = user(me.parentId);
+  const sum = attSummary(attOf(me.id));
+  return pageHead("My profile","") + `
+  <div class="card card-pad" style="max-width:560px">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+      <span class="avatar" style="width:54px;height:54px;font-size:19px">${initials(me.name)}</span>
+      <div><b style="font-size:17px">${esc(me.name)}</b><div class="small muted">Age ${me.age} · ${esc(par?par.name:"")}'s family</div></div>
+    </div>
+    <div class="list-row"><div class="grow small"><b>My classes</b><div style="margin-top:5px">${childCourses(me.id).map(c=>`<span class="chip chip-primary" style="margin:2px 4px 2px 0">${esc(c.title)}</span>`).join("")||'<span class="muted tiny">None yet</span>'}</div></div></div>
+    <div class="list-row"><div class="grow small"><b>Attendance</b><div class="muted">${sum.rate==null?"No records yet":sum.rate+"% · "+sum.ab+" absence"+(sum.ab===1?"":"s")}</div></div></div>
+    <p class="tiny muted" style="margin-top:10px">Your parent manages your details. Ask them to update anything that's wrong.</p>
+  </div>`;
+};
+
+/* ---------------- admin attendance ---------------- */
+VIEWS["admin/attendance"] = (me, sess) => {
+  const all = (S.attendance||[]);
+  const selId = sess.adAttClass || "all";
+  const rows = (selId==="all" ? all : all.filter(a=>a.courseId===selId)).slice().sort((a,b)=>a.date<b.date?1:-1);
+  const sum = attSummary(rows);
+  return pageHead("Attendance records","Every register entry across the academy, live from teachers.") + `
+  <div class="stat-row">
+    ${statCard("clip","Overall rate",sum.rate==null?"—":sum.rate+"%",rows.length+" records")}
+    ${statCard("alert","Absences",sum.ab)}
+    ${statCard("calendar","Late arrivals",sum.l)}
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <button class="btn btn-sm ${selId==="all"?"btn-primary":"btn-ghost"}" data-act="adAttClass" data-arg="all">All classes</button>
+    ${S.courses.map(c=>`<button class="btn btn-sm ${selId===c.id?"btn-primary":"btn-ghost"}" data-act="adAttClass" data-arg="${c.id}">${esc(c.title)}</button>`).join("")}
+  </div>
+  <div class="card tablewrap"><table>
+    <thead><tr><th>Date</th><th>Student</th><th>Class</th><th>Status</th><th>Marked by</th></tr></thead>
+    <tbody>${rows.map(a=>`<tr>
+      <td class="num">${fmtDateStr(a.date)}</td>
+      <td><b>${esc((user(a.childId)||{}).name||"—")}</b></td>
+      <td class="muted">${esc((course(a.courseId)||{}).title||"—")}</td>
+      <td>${ATT_CHIP[a.status]||""}</td>
+      <td class="muted">${esc((user(a.teacherId)||{}).name||"—")}</td>
+    </tr>`).join("")||`<tr><td colspan="5"><div class="empty">No attendance records yet — teachers take the register from their Attendance page.</div></td></tr>`}</tbody>
+  </table></div>`;
+};
+
+/* ---------------- complaints ---------------- */
+function complaintCard(cm, showParent){
+  return `<div class="list-row"><div class="grow">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b class="small">${esc(cm.subject)}</b><span class="chip ${CMP_CHIP[cm.status]||"chip-muted"}">${CMP_LABEL[cm.status]||cm.status}</span></div>
+    <div class="small muted" style="margin-top:3px">${esc(cm.text)}</div>
+    ${cm.reply?`<div class="small" style="margin-top:8px;background:var(--surface2);border-radius:8px;padding:9px 12px"><b class="tiny" style="color:var(--ink2)">ACADEMY REPLY</b><br>${esc(cm.reply)}</div>`:""}
+    <div class="tiny" style="color:var(--ink3);margin-top:6px">${showParent?esc((user(cm.parentId)||{}).name||"")+" · ":""}${ago(cm.ts)}</div>
+  </div></div>`;
+}
+VIEWS["parent/complaints"] = me => {
+  const mine = (S.complaints||[]).filter(c=>c.parentId===me.id).sort((a,b)=>b.ts-a.ts);
+  return pageHead("Complaints & feedback","Raise anything with the academy — you'll be notified when they respond.") + `
+  <div class="grid2" style="align-items:start">
+    <div class="card card-pad">
+      <h3 style="font-size:16px;margin-bottom:12px">New complaint</h3>
+      <form data-form="complaint">
+        <div class="field"><label>Subject</label><input name="subject" required placeholder="e.g. Class timing"></div>
+        <div class="field"><label>Details</label><textarea name="text" rows="4" required placeholder="Tell us what happened and what you'd like us to do."></textarea></div>
+        <button class="btn btn-primary" type="submit">Submit to academy</button>
+      </form>
+    </div>
+    <div class="card card-pad">
+      <h3 style="font-size:16px;margin-bottom:6px">Your complaints</h3>
+      ${mine.length?mine.map(cm=>complaintCard(cm,false)).join(""):`<div class="empty">Nothing raised yet.</div>`}
+    </div>
+  </div>`;
+};
+VIEWS["admin/complaints"] = me => {
+  const open = (S.complaints||[]).filter(c=>c.status!=="resolved").sort((a,b)=>b.ts-a.ts);
+  const done = (S.complaints||[]).filter(c=>c.status==="resolved").sort((a,b)=>b.ts-a.ts);
+  const withBtn = cm => complaintCard(cm,true).replace('</div></div>', `</div><button class="btn btn-ghost btn-sm" data-act="openRespond" data-arg="${cm.id}" style="align-self:flex-start">Respond</button></div>`);
+  return pageHead("Complaints","Respond and resolve — the parent is notified immediately.") + `
+  <h2 class="section-title">Needs a response ${open.length?`<span class="chip chip-warn">${open.length}</span>`:""}</h2>
+  <div class="card card-pad">${open.length?open.map(withBtn).join(""):`<div class="empty">All clear. 🎉</div>`}</div>
+  <h2 class="section-title">Resolved</h2>
+  <div class="card card-pad">${done.length?done.map(cm=>complaintCard(cm,true)).join(""):`<div class="empty">None resolved yet.</div>`}</div>`;
+};
+
+/* ============================ modals ============================= */
+function openModal(html){ document.getElementById("modal-root").innerHTML = `<div class="modal-veil" data-act="veil"><div class="modal" data-stop>${html}</div></div>`; }
+function closeModal(){ document.getElementById("modal-root").innerHTML = ""; }
+const modalHead = t => `<div class="modal-head"><h2>${t}</h2><button class="iconbtn" data-act="closeModal" aria-label="Close" style="border:none">✕</button></div>`;
+
+function enrollModal(crsId, step, chosenChildId){
+  const c = course(crsId); if(!c) return;
+  const me = user(getSess().userId);
+  const kids = childrenOf(me.id);
+  if(step==="processing"){
+    openModal(modalHead("Processing payment…") + `<div class="modal-body" style="text-align:center;padding:34px 22px"><span class="spin"></span><p class="small muted" style="margin-top:14px">Contacting the (pretend) payment gateway…</p></div>`);
+    return;
+  }
+  if(step==="done"){
+    const k = user(chosenChildId);
+    openModal(modalHead("Payment successful") + `<div class="modal-body" style="text-align:center">
+      <div class="success-blob">✓</div>
+      <p class="small"><b>${esc(k.name)}</b> is now enrolled in <b>${esc(c.title)}</b>.<br><span class="muted">The teacher’s roster, ${esc(k.name.split(" ")[0])}’s schedule and the admin dashboard have all been updated.</span></p>
+      <button class="btn btn-primary" data-act="closeModal" style="margin-top:8px">Done</button>
+    </div>`);
+    return;
+  }
+  openModal(modalHead("Enrol in " + esc(c.title)) + `<div class="modal-body">
+    <form data-form="pay" data-course="${c.id}">
+      <div class="field"><label>Which child?</label>
+        <select name="childId" required>${kids.map(k=>`<option value="${k.id}" ${isEnrolled(c.id,k.id)?"disabled":""}>${esc(k.name)} (age ${k.age})${isEnrolled(c.id,k.id)?" — already enrolled":""}</option>`).join("")}</select>
+      </div>
+      <div class="payline"><span class="muted">${esc(c.title)} · first month</span><span class="num">${money(c.price)}</span></div>
+      <div class="payline total"><span>Total due today</span><span class="num">${money(c.price)}</span></div>
+      <div class="democard">
+        <div class="tiny" style="font-weight:700;margin-bottom:8px">💳 Demo checkout — no real payment is taken</div>
+        <div class="field"><label>Card number</label><input name="card" value="4242 4242 4242 4242" readonly></div>
+        <div class="field-row">
+          <div class="field"><label>Expiry</label><input value="12/28" readonly></div>
+          <div class="field"><label>CVC</label><input value="123" readonly></div>
+        </div>
+      </div>
+      <button class="btn btn-primary" type="submit" style="width:100%">Pay ${money(c.price)}</button>
+    </form>
+  </div>`);
+}
+
+function invoiceModal(payId){
+  const p = S.payments.find(x=>x.id===payId); if(!p) return;
+  const par = user(p.parentId)||{}, k = user(p.childId)||{}, c = course(p.courseId)||{};
+  openModal(modalHead("Invoice") + `<div class="modal-body">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:14px">
+      <div>${brand()}<div class="tiny muted" style="margin-top:4px">1 Sunrise Way, #03-01<br>Singapore 189650</div></div>
+      <div style="text-align:right"><b class="num">${esc(p.invoiceNo||("INV-"+p.id.slice(-4).toUpperCase()))}</b><div class="tiny muted">${fmtDate(p.ts)}</div>
+      ${p.status==="paid"?'<span class="chip chip-good" style="margin-top:6px">Paid</span>':'<span class="chip chip-bad" style="margin-top:6px">Refunded</span>'}</div>
+    </div>
+    <div class="tiny" style="margin-bottom:12px"><b class="eyebrow">Billed to</b><div class="small" style="margin-top:3px">${esc(par.name||"—")}<br><span class="muted">${esc(par.address||"")}${par.phone?"<br>"+esc(par.phone):""}</span></div></div>
+    <div class="payline" style="border-top:1px solid var(--line2);padding-top:11px"><span>${esc(c.title||"Class")} — monthly fee<br><span class="tiny muted">Student: ${esc(k.name||"—")}</span></span><span class="num">${money(p.amount)}</span></div>
+    <div class="payline total"><span>Total ${p.status==="paid"?"paid":""}</span><span class="num">${money(p.amount)}</span></div>
+    <div class="tiny muted" style="margin-top:8px">Paid by ${esc(p.method)}. Simulated invoice — demo only.</div>
+    <button class="btn btn-primary" data-act="closeModal" style="width:100%;margin-top:14px">Close</button>
+  </div>`);
+}
+
+function editCourseModal(crsId){
+  const c = course(crsId); if(!c) return;
+  const s1 = c.schedule[0]||{day:"Mon",time:"16:00"}, s2 = c.schedule[1];
+  const dayOpts = sel => ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(d=>`<option ${d===sel?"selected":""}>${d}</option>`).join("");
+  openModal(modalHead("Edit " + esc(c.title)) + `<div class="modal-body">
+    <form data-form="editCourse" data-course="${c.id}">
+      <div class="field"><label>Title</label><input name="title" required value="${esc(c.title)}"></div>
+      <div class="field-row">
+        <div class="field"><label>Teacher</label><select name="teacherId">${S.users.filter(u=>u.role==="teacher").map(t=>`<option value="${t.id}" ${t.id===c.teacherId?"selected":""}>${esc(t.name)}</option>`).join("")}</select></div>
+        <div class="field"><label>Price / month</label><input name="price" type="number" min="1" required value="${c.price}"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Session 1 day</label><select name="day1">${dayOpts(s1.day)}</select></div>
+        <div class="field"><label>Time</label><input name="time1" type="time" value="${s1.time}" required></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Session 2 day (optional)</label><select name="day2"><option value="">— none —</option>${dayOpts(s2?s2.day:null)}</select></div>
+        <div class="field"><label>Time</label><input name="time2" type="time" value="${s2?s2.time:""}"></div>
+      </div>
+      <p class="tiny muted">Timetable changes update every student's and teacher's schedule instantly, and families are notified.</p>
+      <button class="btn btn-primary" type="submit" style="width:100%">Save changes</button>
+    </form>
+  </div>`);
+}
+
+function addUserModal(role){
+  role = role || "parent";
+  const tab = (r,label) => `<button type="button" class="btn btn-sm ${role===r?"btn-primary":"btn-ghost"}" data-act="addUserRole" data-arg="${r}">${label}</button>`;
+  openModal(modalHead("Add user") + `<div class="modal-body">
+    <div style="display:flex;gap:8px;margin-bottom:14px">${tab("parent","Parent")}${tab("teacher","Teacher")}${tab("child","Student")}</div>
+    <form data-form="adminAddUser" data-role="${role}">
+      <div class="field"><label>Full name</label><input name="name" required placeholder="Full name"></div>
+      ${role!=="child"?`<div class="field"><label>Email</label><input name="email" type="email" placeholder="email@example.com"></div>`:""}
+      ${role==="parent"?`<div class="field"><label>Phone</label><input name="phone" placeholder="+65 ..."></div>`:""}
+      ${role==="teacher"?`<div class="field"><label>Subjects</label><input name="subjects" placeholder="e.g. Maths · Science"></div>
+        <div class="field"><label>Bio</label><textarea name="bio" rows="2"></textarea></div>`:""}
+      ${role==="child"?`<div class="field-row">
+        <div class="field"><label>Age</label><input name="age" type="number" min="4" max="18" required></div>
+        <div class="field"><label>Parent</label><select name="parentId">${S.users.filter(u=>u.role==="parent").map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("")}</select></div>
+      </div>`:""}
+      <button class="btn btn-primary" type="submit" style="width:100%">Add ${role==="child"?"student":role}</button>
+    </form>
+  </div>`);
+}
+
+function regParentModal(){
+  openModal(modalHead("Create a parent account") + `<div class="modal-body">
+    <p class="tiny muted" style="margin-bottom:12px">In the real product this would be email + password sign-up. In the demo, your account is created instantly.</p>
+    <form data-form="regParent">
+      <div class="field"><label>Full name</label><input name="name" required placeholder="e.g. Priya Nair"></div>
+      <div class="field"><label>Email</label><input name="email" type="email" required placeholder="you@example.com"></div>
+      <div class="field"><label>Phone</label><input name="phone" placeholder="+65 ..."></div>
+      <button class="btn btn-primary" type="submit" style="width:100%">Create account & sign in</button>
+    </form>
+  </div>`);
+}
+function applyTeacherModal(){
+  openModal(modalHead("Apply to teach") + `<div class="modal-body">
+    <p class="tiny muted" style="margin-bottom:12px">Applications go to the academy admin for approval — you'll see your status the moment they decide.</p>
+    <form data-form="applyTeacher">
+      <div class="field"><label>Full name</label><input name="name" required placeholder="e.g. David Tan"></div>
+      <div class="field"><label>Email</label><input name="email" type="email" required placeholder="you@example.com"></div>
+      <div class="field"><label>Subjects</label><input name="subjects" required placeholder="e.g. Chess · Maths"></div>
+      <div class="field"><label>Short bio</label><textarea name="bio" rows="3" placeholder="Experience, teaching style…"></textarea></div>
+      <button class="btn btn-primary" type="submit" style="width:100%">Submit application</button>
+    </form>
+  </div>`);
+}
+
+function recordPayModal(){
+  const kids = S.users.filter(u=>u.role==="child");
+  openModal(modalHead("Record a payment") + `<div class="modal-body">
+    <p class="tiny muted" style="margin-bottom:12px">For payments taken outside the app — cash or PayNow at the counter. An invoice is issued and, if needed, the child is enrolled in the class.</p>
+    <form data-form="recordPay">
+      <div class="field"><label>Child</label>
+        <select name="childId">${kids.map(k=>`<option value="${k.id}">${esc(k.name)} — ${esc((user(k.parentId)||{}).name||"")}</option>`).join("")}</select>
+      </div>
+      <div class="field"><label>Class</label>
+        <select name="courseId">${S.courses.filter(c=>c.status==="active").map(c=>`<option value="${c.id}">${esc(c.title)} (${money(c.price)}/mo)</option>`).join("")}</select>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Amount (blank = class fee)</label><input name="amount" type="number" min="1" step="0.01" placeholder="auto"></div>
+        <div class="field"><label>Method</label><select name="method"><option>Cash</option><option>PayNow</option><option>Bank transfer</option><option>Card (terminal)</option></select></div>
+      </div>
+      <button class="btn btn-primary" type="submit" style="width:100%">Record payment</button>
+    </form>
+  </div>`);
+}
+
+function respondModal(cmId){
+  const cm = (S.complaints||[]).find(x=>x.id===cmId); if(!cm) return;
+  openModal(modalHead("Respond to complaint") + `<div class="modal-body">
+    <div class="small" style="margin-bottom:12px"><b>${esc(cm.subject)}</b><div class="muted">${esc(cm.text)}</div><div class="tiny" style="color:var(--ink3);margin-top:3px">${esc((user(cm.parentId)||{}).name||"")}</div></div>
+    <form data-form="respondComplaint" data-cm="${cm.id}">
+      <div class="field"><label>Status</label>
+        <select name="status">${["open","in_progress","resolved"].map(s=>`<option value="${s}" ${cm.status===s?"selected":""}>${CMP_LABEL[s]}</option>`).join("")}</select>
+      </div>
+      <div class="field"><label>Reply to parent</label><textarea name="reply" rows="4" placeholder="What is the academy doing about this?">${esc(cm.reply||"")}</textarea></div>
+      <button class="btn btn-primary" type="submit" style="width:100%">Send response</button>
+    </form>
+  </div>`);
+}
+
+function reviewModal(crsId){
+  const c = course(crsId); if(!c) return;
+  openModal(modalHead("Review " + esc(c.title)) + `<div class="modal-body">
+    <form data-form="review" data-course="${c.id}">
+      <div class="field"><label>Rating</label>
+        <select name="rating">${[5,4,3,2,1].map(n=>`<option value="${n}">${starStr(n)} (${n})</option>`).join("")}</select>
+      </div>
+      <div class="field"><label>Your review</label><textarea name="text" rows="4" required placeholder="How has the class been for your child?"></textarea></div>
+      <p class="tiny muted">Reviews are checked by the academy before they’re published.</p>
+      <button class="btn btn-primary" type="submit" style="width:100%">Submit review</button>
+    </form>
+  </div>`);
+}
+
+function progressModal(presetChild, presetCourse){
+  const me = user(getSess().userId);
+  const crs = coursesOfTeacher(me.id);
+  const options = crs.flatMap(c=>rosterForCourse(c.id).map(e=>({v:e.childId+"|"+c.id, label:(user(e.childId)||{}).name+" — "+c.title})));
+  if(!options.length){ toast("No students enrolled in your classes yet."); return; }
+  const preset = presetChild ? presetChild+"|"+presetCourse : options[0].v;
+  openModal(modalHead("Progress update") + `<div class="modal-body">
+    <form data-form="progress">
+      <div class="field"><label>Student & class</label>
+        <select name="pair">${options.map(o=>`<option value="${o.v}" ${o.v===preset?"selected":""}>${esc(o.label)}</option>`).join("")}</select>
+      </div>
+      <div class="field"><label>How did they do?</label>
+        <select name="score">${[5,4,3,2,1].map(n=>`<option value="${n}">${starStr(n)} (${n})</option>`).join("")}</select>
+      </div>
+      <div class="field"><label>Note for the family</label><textarea name="note" rows="4" required placeholder="What did they work on? What went well? What’s next?"></textarea></div>
+      <p class="tiny muted">The parent and the student both see this immediately.</p>
+      <button class="btn btn-primary" type="submit" style="width:100%">Post update</button>
+    </form>
+  </div>`);
+}
+
+/* ============================ actions ============================ */
+const ACTIONS = {
+  signIn(id){ const u=user(id); if(!u) return; setSess({userId:id, role:u.role, view:"dashboard", courseId:null, childId:null, bellOpen:false}); render(); window.scrollTo(0,0); },
+  signOut(){ sessionStorage.removeItem("bw-sess"); render(); window.scrollTo(0,0); },
+  go(v){ setSess({view:v, courseId:null, childId:null, q:"", tab:null, bellOpen:false}); render(); window.scrollTo(0,0); },
+  goChild(id){ setSess({view:"childview", childId:id, bellOpen:false}); render(); window.scrollTo(0,0); },
+  openCourse(id){ setSess({courseId:id}); render(); window.scrollTo(0,0); },
+  closeCourse(){ setSess({courseId:null}); render(); },
+  userTab(t){ setSess({tab:t}); render(); },
+  toggleBell(){ setSess({bellOpen:!getSess().bellOpen}); render(); },
+  veil(){ closeModal(); },
+  closeModal(){ closeModal(); },
+  openEnroll(id){ const kids=childrenOf(getSess().userId); if(!kids.length){ toast("Add a child first (My children)."); return; } if(kids.every(k=>isEnrolled(id,k.id))){ toast("All your children are already enrolled in this class."); return; } enrollModal(id,"form"); },
+  openReview(id){ reviewModal(id); },
+  openProgress(){ progressModal(); },
+  openProgressFor(arg){ const [child, crs]=arg.split("|"); progressModal(child, crs); },
+  attClass(id){ setSess({attClass:id}); render(); },
+  resExam(id){ setSess({resExam:id}); render(); },
+  adAttClass(id){ setSess({adAttClass:id}); render(); },
+  invoice(id){ invoiceModal(id); },
+  openRecordPay(){ recordPayModal(); },
+  openRegParent(){ regParentModal(); },
+  openApplyTeacher(){ applyTeacherModal(); },
+  openAddUser(){ addUserModal("parent"); },
+  addUserRole(r){ addUserModal(r); },
+  editCourse(id){ editCourseModal(id); },
+  openRespond(id){ respondModal(id); },
+  saveResult(arg){
+    const [examId, childId] = arg.split("|");
+    const inp = document.querySelector(`[data-res-input="${childId}"]`);
+    const marks = Number(inp && inp.value);
+    if(inp==null || inp.value==="" || isNaN(marks) || marks<0 || marks>100){ toast("Enter marks between 0 and 100."); return; }
+    const ex = exam(examId), k = user(childId), me = user(getSess().userId);
+    if(!ex||!k) return;
+    const c = course(ex.courseId)||{};
+    commit(()=>{
+      S.results = S.results || [];
+      const r = S.results.find(x=>x.examId===examId && x.childId===childId);
+      if(r){ r.marks = marks; r.ts = Date.now(); }
+      else S.results.push({id:uid("rs"), examId, childId, marks, teacherId:me.id, ts:Date.now()});
+      addEvent("🏅", "Result published: "+k.name+" scored "+marks+"/100 ("+gradeOf(marks)+") in "+ex.title+" — "+(c.title||"")+".", [], [k.parentId, childId]);
+    });
+    toast("Result saved — the family can see it now.");
+  },
+  markAtt(arg){
+    const [childId, courseId, date, status] = arg.split("|");
+    const k = user(childId), c = course(courseId), me = user(getSess().userId);
+    if(!k || !c) return;
+    commit(()=>{
+      S.attendance = S.attendance || [];
+      const rec = S.attendance.find(a=>a.childId===childId && a.courseId===courseId && a.date===date);
+      if(rec) rec.status = status;
+      else S.attendance.push({id:uid("at"), childId, courseId, teacherId:me.id, date, status});
+      if(status==="absent") addEvent("📋", k.name+" was marked absent from "+c.title+" ("+fmtDateStr(date)+").", [], [k.parentId]);
+      if(status==="late")   addEvent("📋", k.name+" arrived late to "+c.title+" ("+fmtDateStr(date)+").", [], [k.parentId]);
+    });
+  },
+  approveTeacher(id){
+    commit(()=>{ const t=user(id); if(t){ t.status="active"; addEvent("🎉","Your teacher account was approved — welcome aboard!",[],[id]); addEvent("👩‍🏫", t.name+" was approved as a teacher.", ["admin"], []); } });
+    toast("Teacher approved — their account is live.");
+  },
+  toggleCourse(id){ commit(()=>{ const c=course(id); if(c){ c.status = c.status==="active"?"draft":"active"; if(c.status==="active") addEvent("📚","New class available: "+c.title+".",["parent"],[]); } }); },
+  refund(id){
+    commit(()=>{ const p=S.payments.find(x=>x.id===id); if(p){ p.status="refunded"; addEvent("↩️","Your payment of "+money(p.amount)+" for "+((course(p.courseId)||{}).title||"a class")+" was refunded.",[],[p.parentId]); } });
+    toast("Payment refunded. The parent has been notified.");
+  },
+  reviewSet(arg){
+    const [id, status] = arg.split("|");
+    commit(()=>{ const rv=S.reviews.find(x=>x.id===id); if(!rv) return; rv.status=status;
+      const c=course(rv.courseId)||{};
+      if(status==="approved"){ addEvent("⭐","Your review of "+ (c.title||"a class") +" was published.",[],[rv.parentId]); addEvent("⭐","A new "+rv.rating+"-star review was published on "+(c.title||"your class")+".",[],[c.teacherId]); }
+      else addEvent("💬","Your review of "+(c.title||"a class")+" wasn’t published this time.",[],[rv.parentId]);
+    });
+    toast(status==="approved"?"Review published to the class page.":"Review rejected.");
+  },
+  resetDemo(){
+    if(!confirm("Reset all demo data back to the starting state? Every device using this demo will update.")) return;
+    const v = S.version || 0;
+    S = seedState(); S.version = v;
+    save(); render(); toast("Demo data has been reset everywhere.");
+  }
+};
+
+const FORMS = {
+  addChild(fd){
+    const name=(fd.get("name")||"").trim(); const age=Number(fd.get("age"));
+    if(!name||!age) return;
+    const me=user(getSess().userId);
+    commit(()=>{ S.users.push({id:uid("c"), role:"child", parentId:me.id, name, age});
+      addEvent("👧", me.name+" added a new child: "+name+".", ["admin"], []); });
+    toast(name+" has been added. You can enrol them in any class now.");
+  },
+  pay(fd, form){
+    const crsId = form.dataset.course; const childId = fd.get("childId");
+    const c = course(crsId); const k = user(childId); const me=user(getSess().userId);
+    if(!c||!k) return;
+    enrollModal(crsId,"processing");
+    setTimeout(()=>{
+      commit(()=>{
+        S.enrollments.push({id:uid("e"), courseId:crsId, childId, parentId:me.id, ts:Date.now()});
+        S.invSeq = S.invSeq || 1008;
+        S.payments.push({id:uid("pay"), invoiceNo:"INV-"+(S.invSeq++), ts:Date.now(), parentId:me.id, childId, courseId:crsId, amount:c.price, method:"Visa •••• 4242", status:"paid"});
+        addEvent("💳", me.name+" paid "+money(c.price)+" — "+k.name+" joined "+c.title+".", ["admin"], []);
+        addEvent("🎒", "New student: "+k.name+" joined "+c.title+".", [], [c.teacherId]);
+        addEvent("🎉", "You’ve been enrolled in "+c.title+"! It’s on your schedule now.", [], [childId]);
+      });
+      enrollModal(crsId,"done",childId);
+    }, 1400);
+  },
+  review(fd, form){
+    const crsId=form.dataset.course; const me=user(getSess().userId);
+    const rating=Number(fd.get("rating")); const text=(fd.get("text")||"").trim();
+    if(!text) return;
+    commit(()=>{ S.reviews.push({id:uid("rv"), courseId:crsId, parentId:me.id, rating, text, ts:Date.now(), status:"pending"});
+      addEvent("⭐","New review from "+me.name+" is awaiting approval ("+((course(crsId)||{}).title||"")+").",["admin"],[]); });
+    closeModal();
+    toast("Thanks! Your review was sent to the academy for approval.");
+  },
+  progress(fd){
+    const [childId, crsId] = (fd.get("pair")||"").split("|");
+    const me=user(getSess().userId);
+    const score=Number(fd.get("score")); const note=(fd.get("note")||"").trim();
+    const k=user(childId); const c=course(crsId);
+    if(!k||!c||!note) return;
+    commit(()=>{ S.progress.push({id:uid("pr"), childId, courseId:crsId, teacherId:me.id, ts:Date.now(), score, note});
+      addEvent("🌟","New progress update for "+k.name+" in "+c.title+".",[],[k.parentId, childId]); });
+    closeModal();
+    toast("Update posted — "+((user(k.parentId)||{}).name||"the parent")+" and "+k.name.split(" ")[0]+" can see it now.");
+  },
+  saveProfile(fd){
+    const me=user(getSess().userId);
+    commit(()=>{
+      me.name=(fd.get("name")||me.name).trim()||me.name;
+      ["email","phone","address","subjects","bio"].forEach(f=>{ if(fd.has(f)) me[f]=(fd.get(f)||"").trim(); });
+    });
+    toast("Profile saved.");
+  },
+  complaint(fd){
+    const me=user(getSess().userId);
+    const subject=(fd.get("subject")||"").trim(), text=(fd.get("text")||"").trim();
+    if(!subject||!text) return;
+    commit(()=>{
+      S.complaints = S.complaints || [];
+      S.complaints.push({id:uid("cm"), parentId:me.id, subject, text, ts:Date.now(), status:"open", reply:"", updatedAt:Date.now()});
+      addEvent("📨","New complaint from "+me.name+": “"+subject+"”.",["admin"],[]);
+    });
+    toast("Sent to the academy. You'll be notified when they respond.");
+  },
+  respondComplaint(fd, form){
+    const cm=(S.complaints||[]).find(x=>x.id===form.dataset.cm); if(!cm) return;
+    const status=fd.get("status")||cm.status, reply=(fd.get("reply")||"").trim();
+    commit(()=>{
+      cm.status=status; cm.reply=reply; cm.updatedAt=Date.now();
+      addEvent("📨","Update on your complaint “"+cm.subject+"”: "+(CMP_LABEL[status]||status)+(reply?" — “"+reply.slice(0,80)+(reply.length>80?"…":"")+"”":"")+".",[],[cm.parentId]);
+    });
+    closeModal();
+    toast("Response sent to "+((user(cm.parentId)||{}).name||"the parent")+".");
+  },
+  editCourse(fd, form){
+    const c = course(form.dataset.course); if(!c) return;
+    const sched = [{day:fd.get("day1")||"Mon", time:fd.get("time1")||"16:00"}];
+    if(fd.get("day2") && fd.get("time2")) sched.push({day:fd.get("day2"), time:fd.get("time2")});
+    commit(()=>{
+      c.title = (fd.get("title")||c.title).trim() || c.title;
+      c.teacherId = fd.get("teacherId") || c.teacherId;
+      c.price = Number(fd.get("price")) || c.price;
+      c.schedule = sched;
+      const fam = rosterForCourse(c.id).flatMap(e=>[e.childId, e.parentId]);
+      addEvent("🗓️","Update for "+c.title+": new schedule is "+fmtSched(sched)+".", [], [...new Set(fam)].concat(c.teacherId));
+    });
+    closeModal();
+    toast("Class updated — timetables refreshed for everyone enrolled.");
+  },
+  adminAddUser(fd, form){
+    const role = form.dataset.role;
+    const name = (fd.get("name")||"").trim(); if(!name) return;
+    commit(()=>{
+      if(role==="child"){
+        S.users.push({id:uid("c"), role:"child", parentId:fd.get("parentId"), name, age:Number(fd.get("age"))||8});
+      } else if(role==="teacher"){
+        S.users.push({id:uid("t"), role:"teacher", name, email:(fd.get("email")||"").trim(), subjects:(fd.get("subjects")||"").trim(), bio:(fd.get("bio")||"").trim(), status:"active"});
+      } else {
+        S.users.push({id:uid("p"), role:"parent", name, email:(fd.get("email")||"").trim(), phone:(fd.get("phone")||"").trim(), address:""});
+      }
+      addEvent("👤","Admin added a new "+(role==="child"?"student":role)+": "+name+".",["admin"],[]);
+    });
+    closeModal();
+    toast((role==="child"?"Student":role==="teacher"?"Teacher":"Parent")+" added.");
+  },
+  regParent(fd){
+    const name=(fd.get("name")||"").trim(); if(!name) return;
+    const id = uid("p");
+    commit(()=>{
+      S.users.push({id, role:"parent", name, email:(fd.get("email")||"").trim(), phone:(fd.get("phone")||"").trim(), address:""});
+      addEvent("👋","New parent joined: "+name+".",["admin"],[]);
+    });
+    closeModal();
+    ACTIONS.signIn(id);
+    toast("Welcome to Brightway, "+name.split(" ")[0]+"! Add a child, then browse classes.");
+  },
+  applyTeacher(fd){
+    const name=(fd.get("name")||"").trim(); if(!name) return;
+    const id = uid("t");
+    commit(()=>{
+      S.users.push({id, role:"teacher", name, email:(fd.get("email")||"").trim(), subjects:(fd.get("subjects")||"").trim(), bio:(fd.get("bio")||"").trim(), status:"pending"});
+      addEvent("👩‍🏫","New teacher application: "+name+" ("+(fd.get("subjects")||"").trim()+"). Review under Users → Teachers.",["admin"],[]);
+    });
+    closeModal();
+    ACTIONS.signIn(id);
+    toast("Application sent — the admin will review it.");
+  },
+  announce(fd, form){
+    const text=(fd.get("text")||"").trim(); if(!text) return;
+    const aud=fd.get("audience")||"all";
+    let roles=[], userIds=[], label="everyone";
+    if(aud==="all"){ roles=["parent","teacher","child"]; }
+    else if(aud.startsWith("role:")){ const r=aud.slice(5); roles=[r]; label = r==="child" ? "all students" : "all "+r+"s"; }
+    else if(aud.startsWith("user:")){ const u=user(aud.slice(5)); if(!u) return; userIds=[u.id]; label=u.name; }
+    commit(()=>{ addEvent("📣","Announcement from the academy: "+text, roles, userIds); });
+    form.reset();
+    toast("Announcement sent to "+label+".");
+  },
+  recordPay(fd){
+    const childId=fd.get("childId"), courseId=fd.get("courseId");
+    const k=user(childId), c=course(courseId);
+    if(!k||!c) return;
+    const amount = Number(fd.get("amount")) || c.price;
+    const method = fd.get("method")||"Cash";
+    const newlyEnrolled = !isEnrolled(courseId, childId);
+    commit(()=>{
+      S.invSeq = S.invSeq || 1008;
+      S.payments.push({id:uid("pay"), invoiceNo:"INV-"+(S.invSeq++), ts:Date.now(), parentId:k.parentId, childId, courseId, amount, method, status:"paid"});
+      if(newlyEnrolled) S.enrollments.push({id:uid("e"), courseId, childId, parentId:k.parentId, ts:Date.now()});
+      addEvent("💳","Payment of "+money(amount)+" recorded for "+k.name+" ("+c.title+", "+method+")."+(newlyEnrolled?" They're now enrolled.":""),[],[k.parentId]);
+      if(newlyEnrolled) addEvent("🎒","New student: "+k.name+" joined "+c.title+" (recorded by admin).",[],[c.teacherId, childId]);
+    });
+    closeModal();
+    toast("Payment recorded — invoice issued"+(newlyEnrolled?" and "+k.name.split(" ")[0]+" enrolled.":"."));
+  },
+  addExam(fd){
+    const title=(fd.get("title")||"").trim(), courseId=fd.get("courseId"), date=fd.get("date"), time=fd.get("time")||"10:00";
+    const c=course(courseId);
+    if(!title||!c||!date) return;
+    commit(()=>{
+      S.exams = S.exams || [];
+      S.exams.push({id:uid("ex"), courseId, title, date, time, room:(fd.get("room")||"").trim()});
+      addEvent("📝","Exam scheduled: "+title+" for "+c.title+" on "+fmtDateStr(date)+" at "+fmtTime(time)+".",["parent","child"],[c.teacherId]);
+    });
+    toast("Added to the date sheet — families and the teacher have been notified.");
+  },
+  addCourse(fd){
+    const title=(fd.get("title")||"").trim(); if(!title) return;
+    commit(()=>{
+      S.courses.push({id:uid("crs"), title, subject:(fd.get("subject")||"General").trim(), icon:(fd.get("icon")||"📚").trim()||"📚",
+        teacherId:fd.get("teacherId"), price:Number(fd.get("price"))||100, desc:(fd.get("desc")||"").trim()||"A brand-new class at Brightway Academy.",
+        schedule:[{day:fd.get("day")||"Mon", time:fd.get("time")||"16:00"}], status:"active"});
+      addEvent("📚","New class available: "+title+". Take a look!",["parent"],[]);
+      addEvent("📚","You’ve been assigned a new class: "+title+".",[],[fd.get("teacherId")]);
+    });
+    toast("Class added — parents can enrol right away.");
+  }
+};
+
+/* delegation */
+document.addEventListener("click", e=>{
+  const stop = e.target.closest("[data-stop]");
+  const el = e.target.closest("[data-act]");
+  if(!el){ if(!stop && document.querySelector(".bell-menu")){ setSess({bellOpen:false}); render(); } return; }
+  if(el.dataset.act==="veil" && stop) return;
+  const fn = ACTIONS[el.dataset.act];
+  if(fn) fn(el.dataset.arg, el);
+});
+document.addEventListener("submit", e=>{
+  const f = e.target;
+  if(f.dataset.form && FORMS[f.dataset.form]){ e.preventDefault(); FORMS[f.dataset.form](new FormData(f), f); }
+});
+document.addEventListener("input", e=>{
+  if(e.target.dataset.input==="attdate"){
+    if(e.target.value){ setSess({attDate:e.target.value}); render(); }
+    return;
+  }
+  if(e.target.dataset.input==="search"){
+    setSess({q:e.target.value});
+    const grid=document.querySelector(".grid3"); // light re-render, keep focus
+    const y=window.scrollY; const val=e.target.value; render(); window.scrollTo(0,y);
+    const inp=document.querySelector('[data-input="search"]'); if(inp){ inp.focus(); inp.setSelectionRange(val.length,val.length); }
+  }
+});
+
+render();
+</script>
+
+</html>
