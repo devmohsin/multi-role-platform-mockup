@@ -1236,11 +1236,12 @@ VIEWS["admin/users"] = (me, sess) => {
       <td class="num"><b>${money(paid)}</b></td></tr>`;
     }).join("")}</tbody></table></div>`;
   } else {
-    body = `<div class="card tablewrap"><table><thead><tr><th>Student</th><th>Age</th><th>Parent</th><th>Classes</th><th>Sign-in code</th><th>Status</th><th></th></tr></thead><tbody>
-    ${S.users.filter(u=>u.role==="child").map(k=>`<tr><td><b>${esc(k.name)}</b></td><td class="num">${k.age}</td>
+    body = `<div class="card tablewrap"><table><thead><tr><th>Student</th><th>Sign-in code</th><th>Age</th><th>Parent</th><th>Classes</th><th>Status</th><th></th></tr></thead><tbody>
+    ${S.users.filter(u=>u.role==="child").map(k=>`<tr><td><b>${esc(k.name)}</b></td>
+      <td class="num"><div style="display:flex;align-items:center;gap:7px;white-space:nowrap"><b>${esc(k.accessCode||"—")}</b><button class="btn btn-ghost btn-sm" data-act="regenCode" data-arg="${k.id}" title="Generate a new code">↻</button></div></td>
+      <td class="num">${k.age}</td>
       <td class="muted">${esc((user(k.parentId)||{}).name||"—")}</td>
       <td class="muted">${childCourses(k.id).map(c=>esc(c.title)).join(", ")||"—"}</td>
-      <td class="num"><div style="display:flex;align-items:center;gap:7px"><b>${esc(k.accessCode||"—")}</b><button class="btn btn-ghost btn-sm" data-act="regenCode" data-arg="${k.id}" title="Generate a new code">↻</button></div></td>
       <td>${childPending(k)?`<span class="chip chip-warn">Pending</span>`:`<span class="chip chip-good">Active</span>`}</td>
       <td>${childPending(k)?`<button class="btn btn-primary btn-sm" data-act="approveChild" data-arg="${k.id}">Approve</button>`:""}</td></tr>`).join("")}</tbody></table></div>
     <p class="tiny muted" style="margin-top:10px">Students sign in with these codes — no passwords. Regenerating a code invalidates the old one everywhere and notifies the student; parents also see and manage codes under My children.</p>`;
