@@ -536,7 +536,7 @@ function toast(msg){
 
 /* ============================ shell ============================== */
 const NAV = {
-  parent:  [["dashboard","home","Home"],["browse","search","Classes"],["children","users","My children"],["payments","card","Payments"],["results","award","Results"],["exams","file","Exams"],["complaints","message","Complaints"],["notifications","bell","Notifications"],["profile","user","Profile"]],
+  parent:  [["dashboard","home","Home"],["browse","search","Classes"],["children","users","My children"],["schedule","calendar","Timetable"],["payments","card","Payments"],["results","award","Results"],["exams","file","Exams"],["complaints","message","Complaints"],["notifications","bell","Notifications"],["profile","user","Profile"]],
   child:   [["dashboard","home","Home"],["myclasses","book","My classes"],["schedule","calendar","Schedule"],["results","award","Results"],["exams","file","Exams"],["progress","star","Progress"],["notifications","bell","Notifications"],["profile","user","Profile"]],
   teacher: [["dashboard","home","Home"],["classes","book","My classes"],["students","grad","Students"],["attendance","clip","Attendance"],["results","award","Results"],["exams","file","Exams"],["schedule","calendar","Schedule"],["notifications","bell","Notifications"],["profile","user","Profile"]],
   admin:   [["dashboard","home","Home"],["users","users","Users"],["courses","book","Classes"],["payments","card","Payments"],["attendance","clip","Attendance"],["exams","file","Exams"],["reviews","star","Reviews"],["complaints","message","Complaints"],["reports","chart","Reports"],["notifications","bell","Notifications"]]
@@ -815,6 +815,18 @@ VIEWS["parent/childview"] = (me, sess) => {
         <div class="tiny" style="color:var(--ink3)">${esc(t?t.name:"")} · ${fmtDate(p.ts)}</div></div>`;
     }).join("")}</div>`:`<div class="empty">No progress updates yet. They’ll appear here as soon as a teacher posts one.</div>`}
   </div>`;
+};
+
+VIEWS["parent/schedule"] = (me, sess) => {
+  const kids = childrenOf(me.id);
+  if(!kids.length) return pageHead("Timetable","") + `<div class="empty">Add a child first — their weekly timetable will appear here.</div>`;
+  const selId = (sess.schedChild && kids.some(k=>k.id===sess.schedChild)) ? sess.schedChild : kids[0].id;
+  const k = user(selId);
+  return pageHead("Timetable", `${esc(k.name.split(" ")[0])}’s week at the academy. The admin keeps this up to date — changes appear here instantly.`) + `
+  ${kids.length>1?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    ${kids.map(x=>`<button class="btn btn-sm ${x.id===selId?"btn-primary":"btn-ghost"}" data-act="schedChild" data-arg="${x.id}">${esc(x.name.split(" ")[0])}</button>`).join("")}
+  </div>`:""}
+  ${scheduleView(childCourses(selId))}`;
 };
 
 VIEWS["parent/payments"] = me => {
@@ -1597,6 +1609,7 @@ const ACTIONS = {
   openReview(id){ reviewModal(id); },
   openProgress(){ progressModal(); },
   openProgressFor(arg){ const [child, crs]=arg.split("|"); progressModal(child, crs); },
+  schedChild(id){ setSess({schedChild:id}); render(); },
   attClass(id){ setSess({attClass:id}); render(); },
   resExam(id){ setSess({resExam:id}); render(); },
   adAttClass(id){ setSess({adAttClass:id}); render(); },
