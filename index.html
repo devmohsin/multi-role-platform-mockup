@@ -473,6 +473,27 @@ setInterval(pollCloud, 2500);
 pollCloud();
 ensureChildCodes();
 
+/* ---------- stale-cache self-update ----------
+   GitHub Pages caches the page for ~10 min and phones hold on longer.
+   Each deploy stamps BUILD_TS below and updates the site row in Supabase;
+   if the server copy is meaningfully newer than this one, refetch + reload once. */
+const BUILD_TS = "2026-08-31T12:54:20.415Z";
+(async function checkForNewBuild(){
+  if(BUILD_TS.indexOf("__") === 0) return;                    // unstamped copy (e.g. artifact) — skip
+  if(sessionStorage.getItem("bw-fresh")) return;              // only ever reload once per session
+  try{
+    const r = await fetch(CLOUD.url+"/rest/v1/brightway_demo_site?id=eq.1&select=updated_at", {headers:cloudHeaders()});
+    if(!r.ok) return;
+    const rows = await r.json();
+    const ts = rows && rows[0] && rows[0].updated_at;
+    if(ts && new Date(ts).getTime() > new Date(BUILD_TS).getTime() + 150000){
+      sessionStorage.setItem("bw-fresh","1");
+      await fetch(location.href, {cache:"reload"});           // repopulate the HTTP cache from the network
+      location.reload();
+    }
+  }catch(e){}
+})();
+
 /* session (per tab) */
 function getSess(){ try{ return JSON.parse(sessionStorage.getItem("bw-sess")) || {}; }catch(e){ return {}; } }
 function setSess(patch){ const s = Object.assign(getSess(), patch); sessionStorage.setItem("bw-sess", JSON.stringify(s)); return s; }
