@@ -582,7 +582,7 @@ function toast(msg){
 
 /* ============================ shell ============================== */
 const NAV = {
-  parent:  [["dashboard","home","Home"],["browse","search","Classes"],["children","users","My children"],["schedule","calendar","Timetable"],["payments","card","Payments"],["results","award","Results"],["exams","file","Exams"],["complaints","message","Messages"],["notifications","bell","Notifications"],["profile","user","Profile"]],
+  parent:  [["dashboard","home","Home"],["browse","search","Classes"],["children","users","My children"],["schedule","calendar","Timetable"],["homework","pencil","Homework"],["payments","card","Payments"],["results","award","Results"],["exams","file","Exams"],["complaints","message","Messages"],["notifications","bell","Notifications"],["profile","user","Profile"]],
   child:   [["dashboard","home","Home"],["myclasses","book","My classes"],["homework","pencil","Homework"],["schedule","calendar","Schedule"],["results","award","Results"],["exams","file","Exams"],["progress","star","Progress"],["notifications","bell","Notifications"],["profile","user","Profile"]],
   teacher: [["dashboard","home","Home"],["classes","book","My classes"],["students","grad","Students"],["attendance","clip","Attendance"],["homework","pencil","Homework"],["results","award","Results"],["exams","file","Exams"],["schedule","calendar","Schedule"],["notifications","bell","Notifications"],["profile","user","Profile"]],
   admin:   [["dashboard","home","Home"],["users","users","Users"],["courses","book","Classes"],["payments","card","Payments"],["attendance","clip","Attendance"],["exams","file","Exams"],["reviews","star","Reviews"],["complaints","message","Inbox"],["reports","chart","Reports"],["notifications","bell","Notifications"]]
@@ -897,6 +897,26 @@ VIEWS["parent/schedule"] = (me, sess) => {
     ${kids.map(x=>`<button class="btn btn-sm ${x.id===selId?"btn-primary":"btn-ghost"}" data-act="schedChild" data-arg="${x.id}">${esc(x.name.split(" ")[0])}</button>`).join("")}
   </div>`:""}
   ${scheduleView(null, merged)}`;
+};
+
+VIEWS["parent/homework"] = me => {
+  const kids = childrenOf(me.id);
+  const rows = kids.flatMap(k=>{
+    const crsIds = childCourses(k.id).map(c=>c.id);
+    return (S.homework||[]).filter(h=>crsIds.includes(h.courseId)).map(h=>({k, h}));
+  }).sort((a,b)=>a.h.dueDate<b.h.dueDate?-1:1);
+  return pageHead("Homework","Everything the teachers have assigned to your children. Teachers tick tasks off as they're handed in.") + `
+  <div class="card tablewrap" style="max-width:860px"><table>
+    <thead><tr><th>Child</th><th>Task</th><th>Class</th><th>Due</th><th>Status</th></tr></thead>
+    <tbody>${rows.map(({k,h})=>{
+      const c = course(h.courseId)||{}; const done = h.done.includes(k.id);
+      return `<tr><td><b>${esc(k.name.split(" ")[0])}</b></td>
+        <td><b>${esc(h.title)}</b>${h.details?`<div class="tiny muted">${esc(h.details)}</div>`:""}</td>
+        <td class="muted">${esc(c.title||"—")}</td>
+        <td class="num">${fmtDateStr(h.dueDate)}</td>
+        <td>${done?'<span class="chip chip-good">Done</span>':'<span class="chip chip-warn">To do</span>'}</td></tr>`;
+    }).join("")||`<tr><td colspan="5"><div class="empty">No homework assigned yet — you'll be notified the moment a teacher assigns some.</div></td></tr>`}</tbody>
+  </table></div>`;
 };
 
 VIEWS["parent/payments"] = me => {
