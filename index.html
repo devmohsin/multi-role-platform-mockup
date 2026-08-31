@@ -150,8 +150,8 @@
   @media (max-width:880px){
     .sidenav{display:none}
     .main{padding-bottom:110px}
-    .bottomnav{position:fixed;bottom:0;left:0;right:0;z-index:40;display:flex;background:var(--surface);border-top:1px solid var(--line);padding:5px 4px calc(5px + env(safe-area-inset-bottom))}
-    .bottomnav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;font-weight:600;color:var(--ink2);padding:6px 2px;border-radius:8px}
+    .bottomnav{position:fixed;bottom:0;left:0;right:0;z-index:40;display:flex;background:var(--surface);border-top:1px solid var(--line);padding:5px 4px calc(5px + env(safe-area-inset-bottom));overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .bottomnav button{flex:1 0 auto;min-width:62px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;font-weight:600;color:var(--ink2);padding:6px 4px;border-radius:8px;white-space:nowrap}
     .bottomnav button .nav-ico{font-size:18px}
     .bottomnav button.on{color:var(--primary)}
     .whoami .who-text{display:none}
@@ -625,7 +625,7 @@ function render(){
     <main class="main">${bodyFn(me, sess)}</main>
   </div>
   <nav class="bottomnav">
-    ${nav.slice(0,5).map(([v,ico,label])=>`<button class="${view===v?"on":""}" data-act="go" data-arg="${v}"><span class="nav-ico">${icon(ico)}</span>${label}</button>`).join("")}
+    ${nav.map(([v,ico,label])=>`<button class="${view===v?"on":""}" data-act="go" data-arg="${v}"><span class="nav-ico">${icon(ico)}</span>${label}</button>`).join("")}
   </nav>`;
 }
 
@@ -1261,6 +1261,19 @@ VIEWS["admin/payments"] = me => {
   const total = rows.filter(p=>p.status==="paid").reduce((a,p)=>a+p.amount,0);
   return pageHead("Payments", `${money(total)} collected all-time · every payment here is simulated.`,
     `<button class="btn btn-primary" data-act="openRecordPay">＋ Record payment</button>`) + `
+  <h2 class="section-title" style="margin-top:0">Outstanding fees ${duesOutstanding().length?`<span class="chip chip-warn">${money(duesOutstanding().reduce((a,d)=>a+d.amount,0))} owed</span>`:""} <button class="btn btn-ghost btn-sm" data-act="genDues">Generate ${esc(periodNow())} dues</button></h2>
+  <div class="card tablewrap" style="margin-bottom:18px"><table>
+    <thead><tr><th>Period</th><th>Parent</th><th>Child</th><th>Class</th><th>Amount</th><th></th></tr></thead>
+    <tbody>${duesOutstanding().map(d=>`<tr>
+      <td class="num">${esc(d.period)}</td>
+      <td><b>${esc((user(d.parentId)||{}).name||"—")}</b></td>
+      <td class="muted">${esc((user(d.childId)||{}).name||"—")}</td>
+      <td>${esc((course(d.courseId)||{}).title||"—")}</td>
+      <td class="num"><b>${money(d.amount)}</b></td>
+      <td><button class="btn btn-primary btn-sm" data-act="markDuePaid" data-arg="${d.id}">Mark paid</button></td>
+    </tr>`).join("")||`<tr><td colspan="6"><div class="empty">No outstanding fees. 🎉 Use “Generate dues” to bill the current month.</div></td></tr>`}</tbody>
+  </table></div>
+  <h2 class="section-title">Payment history</h2>
   <div class="card tablewrap"><table>
     <thead><tr><th>Date</th><th>Parent</th><th>Child</th><th>Class</th><th>Amount</th><th>Status</th><th></th></tr></thead>
     <tbody>${rows.map(p=>`<tr>
@@ -1272,18 +1285,6 @@ VIEWS["admin/payments"] = me => {
       <td>${p.status==="paid"?`<span class="chip chip-good">Paid</span>`:`<span class="chip chip-bad">Refunded</span>`}</td>
       <td><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" data-act="invoice" data-arg="${p.id}">Invoice</button>${p.status==="paid"?`<button class="btn btn-ghost btn-sm" data-act="refund" data-arg="${p.id}">Refund</button>`:""}</div></td>
     </tr>`).join("")}</tbody>
-  </table></div>
-  <h2 class="section-title">Outstanding fees ${duesOutstanding().length?`<span class="chip chip-warn">${money(duesOutstanding().reduce((a,d)=>a+d.amount,0))} owed</span>`:""} <button class="btn btn-ghost btn-sm" data-act="genDues">Generate ${esc(periodNow())} dues</button></h2>
-  <div class="card tablewrap" style="margin-bottom:18px"><table>
-    <thead><tr><th>Period</th><th>Parent</th><th>Child</th><th>Class</th><th>Amount</th><th></th></tr></thead>
-    <tbody>${duesOutstanding().map(d=>`<tr>
-      <td class="num">${esc(d.period)}</td>
-      <td><b>${esc((user(d.parentId)||{}).name||"—")}</b></td>
-      <td class="muted">${esc((user(d.childId)||{}).name||"—")}</td>
-      <td>${esc((course(d.courseId)||{}).title||"—")}</td>
-      <td class="num"><b>${money(d.amount)}</b></td>
-      <td><button class="btn btn-primary btn-sm" data-act="markDuePaid" data-arg="${d.id}">Mark paid</button></td>
-    </tr>`).join("")||`<tr><td colspan="6"><div class="empty">No outstanding fees. 🎉 Use “Generate dues” to bill the current month.</div></td></tr>`}</tbody>
   </table></div>
   <h2 class="section-title">Teacher payouts <button class="btn btn-primary btn-sm" data-act="openPayout">＋ Record payout</button></h2>
   <div class="card tablewrap" style="margin-bottom:18px"><table>
