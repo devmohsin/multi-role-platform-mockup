@@ -318,6 +318,11 @@ function seedState(){
       {id:"pay9", invoiceNo:"INV-1009", ts:m(1), parentId:"p3", childId:"c5", courseId:"crs6", amount:140, method:"PayNow", status:"paid"}
     ],
     invSeq: 1010,
+    payouts: [
+      {id:"po1", teacherId:"t1", amount:380, ts:m(1), period:"Last month", method:"Bank transfer", note:"Maths Foundations + Science Explorers"},
+      {id:"po2", teacherId:"t2", amount:240, ts:m(1), period:"Last month", method:"Bank transfer", note:"Music classes"},
+      {id:"po3", teacherId:"t3", amount:150, ts:m(1), period:"Last month", method:"PayNow", note:"Creative Writing Club"}
+    ],
     reviews: [
       {id:"rv1", courseId:"crs1", parentId:"p1", rating:5, text:"Zara went from dreading maths homework to asking for extra challenges. Maya is wonderful.", ts:m(1), status:"approved"},
       {id:"rv2", courseId:"crs3", parentId:"p2", rating:4, text:"Emma looks forward to Thursdays all week. Would love slightly more written feedback.", ts:m(2), status:"approved"},
@@ -371,7 +376,7 @@ function seedState(){
 let S = null;
 function loadState(){
   try{ const raw = localStorage.getItem(LS_KEY); if(raw){ const st = JSON.parse(raw);
-    ["attendance","exams","results","complaints"].forEach(k=>{ st[k] = st[k] || []; });
+    ["attendance","exams","results","complaints","payouts"].forEach(k=>{ st[k] = st[k] || []; });
     st.invSeq = st.invSeq || 1008;
     return st; } }catch(e){}
   return null;
@@ -432,7 +437,7 @@ async function pollCloud(){
     else if((row.version||0) > (S.version||0)){
       const prevIds = new Set(S.events.map(ev=>ev.id));
       S = row.state; S.version = row.version;
-      ["attendance","exams","results","complaints"].forEach(k=>{ S[k]=S[k]||[]; });
+      ["attendance","exams","results","complaints","payouts"].forEach(k=>{ S[k]=S[k]||[]; });
       try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(e){}
       const sess = getSess();
       S.events.filter(ev=>!prevIds.has(ev.id) && eventFor(ev,sess)).slice(0,3).reverse().forEach(ev=>toast(ev.icon+" "+ev.text));
@@ -508,6 +513,8 @@ const CMP_LABEL = {open:"Open", in_progress:"In progress", resolved:"Resolved"};
 const CMP_CHIP  = {open:"chip-warn", in_progress:"chip-accent", resolved:"chip-good"};
 const exam = id => (S.exams||[]).find(e=>e.id===id);
 const childPending = k => !!k && k.role==="child" && k.status==="pending";
+const teacherRevenue = tid => S.payments.filter(p=>p.status==="paid" && (course(p.courseId)||{}).teacherId===tid).reduce((a,p)=>a+p.amount,0);
+const teacherPaidOut = tid => (S.payouts||[]).filter(p=>p.teacherId===tid).reduce((a,p)=>a+p.amount,0);
 function makeCode(name){ return (name.split(" ")[0]||"KID").toUpperCase().replace(/[^A-Z]/g,"").slice(0,6) + "-" + (1000 + Math.floor(Math.random()*9000)); }
 function ensureChildCodes(){
   let changed = false;
@@ -847,13 +854,16 @@ VIEWS["parent/childview"] = (me, sess) => {
 VIEWS["parent/schedule"] = (me, sess) => {
   const kids = childrenOf(me.id);
   if(!kids.length) return pageHead("Timetable","") + `<div class="empty">Add a child first — their weekly timetable will appear here.</div>`;
-  const selId = (sess.schedChild && kids.some(k=>k.id===sess.schedChild)) ? sess.schedChild : kids[0].id;
-  const k = user(selId);
-  return pageHead("Timetable", `${esc(k.name.split(" ")[0])}’s week at the academy. The admin keeps this up to date — changes appear here instantly.`) + `
+  const selId = (sess.schedChild && (sess.schedChild==="all" || kids.some(k=>k.id===sess.schedChild))) ? sess.schedChild : (kids.length>1 ? "all" : kids[0].id);
+  const showAll = selId==="all";
+  const shown = showAll ? kids : kids.filter(k=>k.id===selId);
+  const merged = shown.flatMap(k=>childCourses(k.id).flatMap(c=>c.schedule.map(s=>({c, day:s.day, time:s.time, tag: showAll&&kids.length>1 ? k.name.split(" ")[0] : ""}))));
+  return pageHead("Timetable", showAll ? "The whole family's week at the academy — each class shows which child it's for." : `${esc((user(selId)||{}).name.split(" ")[0])}’s week at the academy.`) + `
   ${kids.length>1?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <button class="btn btn-sm ${showAll?"btn-primary":"btn-ghost"}" data-act="schedChild" data-arg="all">All children</button>
     ${kids.map(x=>`<button class="btn btn-sm ${x.id===selId?"btn-primary":"btn-ghost"}" data-act="schedChild" data-arg="${x.id}">${esc(x.name.split(" ")[0])}</button>`).join("")}
   </div>`:""}
-  ${scheduleView(childCourses(selId))}`;
+  ${scheduleView(null, merged)}`;
 };
 
 VIEWS["parent/payments"] = me => {
@@ -916,16 +926,16 @@ VIEWS["child/myclasses"] = me => {
   return pageHead("My classes","") + `<div class="grid3">${crs.map(c=>courseCard(c,"")).join("")||`<div class="empty">No classes yet.</div>`}</div>`;
 };
 
-function scheduleView(courses){
+function scheduleView(courses, sessOverride){
   const order = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-  const sess = [];
-  courses.forEach(c=>c.schedule.forEach(s=>sess.push({c, day:s.day, time:s.time})));
+  const sess = sessOverride || [];
+  if(!sessOverride) courses.forEach(c=>c.schedule.forEach(s=>sess.push({c, day:s.day, time:s.time})));
   if(!sess.length) return `<div class="empty">Nothing scheduled yet.</div>`;
   const times = [...new Set(sess.map(s=>s.time))].sort();
   const todayName = DAYS[new Date().getDay()];
   const cell = (d,t) => sess.filter(s=>s.day===d && s.time===t).map(s=>{
     const n = rosterForCourse(s.c.id).length;
-    return `<div class="tt-item"><b>${esc(s.c.title)}</b><span>${esc((user(s.c.teacherId)||{}).name||"")} · ${n} student${n===1?"":"s"}</span></div>`;
+    return `<div class="tt-item"><b>${esc(s.c.title)}</b><span>${s.tag?esc(s.tag)+" · ":""}${esc((user(s.c.teacherId)||{}).name||"")} · ${n} student${n===1?"":"s"}</span></div>`;
   }).join("");
   return `<div class="card tablewrap"><table class="timetable">
     <thead><tr><th>Time</th>${order.map(d=>`<th class="${d===todayName?"tt-today":""}">${d}${d===todayName?" · today":""}</th>`).join("")}</tr></thead>
@@ -1031,15 +1041,27 @@ VIEWS["teacher/attendance"] = (me, sess) => {
 
 VIEWS["teacher/schedule"] = me => pageHead("My week","") + scheduleView(coursesOfTeacher(me.id));
 
-VIEWS["teacher/profile"] = me => pageHead("My profile","Parents see this on your class pages.") + `
-  <div class="card card-pad" style="max-width:560px">
-    <form data-form="saveProfile">
-      <div class="field"><label>Full name</label><input name="name" required value="${esc(me.name)}"></div>
-      <div class="field"><label>Subjects</label><input name="subjects" required value="${esc(me.subjects||"")}"></div>
-      <div class="field"><label>Bio</label><textarea name="bio" rows="4">${esc(me.bio||"")}</textarea></div>
-      <button class="btn btn-primary" type="submit">Save profile</button>
-    </form>
+VIEWS["teacher/profile"] = me => {
+  const mine = (S.payouts||[]).filter(p=>p.teacherId===me.id).sort((a,b)=>b.ts-a.ts);
+  return pageHead("My profile","Parents see this on your class pages.") + `
+  <div class="grid2" style="align-items:start">
+    <div class="card card-pad">
+      <form data-form="saveProfile">
+        <div class="field"><label>Full name</label><input name="name" required value="${esc(me.name)}"></div>
+        <div class="field"><label>Subjects</label><input name="subjects" required value="${esc(me.subjects||"")}"></div>
+        <div class="field"><label>Bio</label><textarea name="bio" rows="4">${esc(me.bio||"")}</textarea></div>
+        <button class="btn btn-primary" type="submit">Save profile</button>
+      </form>
+    </div>
+    <div class="card card-pad">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <h2 style="font-size:17px">My payouts</h2>
+        <span class="small muted num">Total: <b style="color:var(--ink)">${money(teacherPaidOut(me.id))}</b></span>
+      </div>
+      ${mine.length?mine.map(p=>`<div class="list-row"><div class="grow small"><b class="num">${money(p.amount)}</b> <span class="muted">· ${esc(p.period||"")} · ${esc(p.method||"")}</span>${p.note?`<div class="tiny muted">${esc(p.note)}</div>`:""}</div><span class="tiny" style="color:var(--ink3)">${fmtDate(p.ts)}</span></div>`).join(""):`<div class="empty">No payouts yet — the academy admin records these.</div>`}
+    </div>
   </div>`;
+};
 
 /* ---------------- ADMIN ---------------- */
 function monthKey(ts){ const d=new Date(ts); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); }
@@ -1166,6 +1188,26 @@ VIEWS["admin/payments"] = me => {
       <td>${p.status==="paid"?`<span class="chip chip-good">Paid</span>`:`<span class="chip chip-bad">Refunded</span>`}</td>
       <td><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" data-act="invoice" data-arg="${p.id}">Invoice</button>${p.status==="paid"?`<button class="btn btn-ghost btn-sm" data-act="refund" data-arg="${p.id}">Refund</button>`:""}</div></td>
     </tr>`).join("")}</tbody>
+  </table></div>
+  <h2 class="section-title">Teacher payouts <button class="btn btn-primary btn-sm" data-act="openPayout">＋ Record payout</button></h2>
+  <div class="card tablewrap" style="margin-bottom:18px"><table>
+    <thead><tr><th>Teacher</th><th>Classes</th><th>Students</th><th>Collected (their classes)</th><th>Paid out</th><th>Last payout</th><th></th></tr></thead>
+    <tbody>${S.users.filter(u=>u.role==="teacher"&&u.status==="active").map(t=>{
+      const crs = coursesOfTeacher(t.id);
+      const students = new Set(crs.flatMap(c=>rosterForCourse(c.id).map(e=>e.childId))).size;
+      const last = (S.payouts||[]).filter(p=>p.teacherId===t.id).sort((a,b)=>b.ts-a.ts)[0];
+      return `<tr><td><b>${esc(t.name)}</b></td><td class="num">${crs.length}</td><td class="num">${students}</td>
+        <td class="num">${money(teacherRevenue(t.id))}</td><td class="num"><b>${money(teacherPaidOut(t.id))}</b></td>
+        <td class="muted">${last?fmtDate(last.ts):"never"}</td>
+        <td><button class="btn btn-ghost btn-sm" data-act="openPayout" data-arg="${t.id}">Pay</button></td></tr>`;
+    }).join("")}</tbody>
+  </table></div>
+  <div class="card tablewrap"><table>
+    <thead><tr><th>Date</th><th>Teacher</th><th>Period</th><th>Amount</th><th>Method</th><th>Note</th></tr></thead>
+    <tbody>${(S.payouts||[]).slice().sort((a,b)=>b.ts-a.ts).map(p=>`<tr>
+      <td class="num">${fmtDate(p.ts)}</td><td><b>${esc((user(p.teacherId)||{}).name||"—")}</b></td>
+      <td class="muted">${esc(p.period||"—")}</td><td class="num"><b>${money(p.amount)}</b></td>
+      <td class="muted">${esc(p.method||"—")}</td><td class="muted">${esc(p.note||"")}</td></tr>`).join("")||`<tr><td colspan="6"><div class="empty">No payouts recorded yet.</div></td></tr>`}</tbody>
   </table></div>`;
 };
 
@@ -1565,6 +1607,27 @@ function applyTeacherModal(){
   </div>`);
 }
 
+function payoutModal(teacherId){
+  const teachers = S.users.filter(u=>u.role==="teacher"&&u.status==="active");
+  if(!teachers.length) return;
+  const sel = teachers.some(t=>t.id===teacherId) ? teacherId : teachers[0].id;
+  openModal(modalHead("Record teacher payout") + `<div class="modal-body">
+    <form data-form="payout">
+      <div class="field"><label>Teacher</label>
+        <select name="teacherId">${teachers.map(t=>`<option value="${t.id}" ${t.id===sel?"selected":""}>${esc(t.name)} — collected ${money(teacherRevenue(t.id))}, paid ${money(teacherPaidOut(t.id))}</option>`).join("")}</select>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Amount</label><input name="amount" type="number" min="1" step="0.01" required placeholder="e.g. 400"></div>
+        <div class="field"><label>Period</label><input name="period" placeholder="e.g. Sep 2026" value="${new Date().toLocaleDateString(undefined,{month:"short",year:"numeric"})}"></div>
+      </div>
+      <div class="field"><label>Method</label><select name="method"><option>Bank transfer</option><option>PayNow</option><option>Cash</option></select></div>
+      <div class="field"><label>Note (optional)</label><input name="note" placeholder="e.g. Includes recital bonus"></div>
+      <p class="tiny muted">The teacher is notified and sees this under Profile → My payouts. Simulated — no real money moves.</p>
+      <button class="btn btn-primary" type="submit" style="width:100%">Record payout</button>
+    </form>
+  </div>`);
+}
+
 function recordPayModal(){
   const kids = S.users.filter(u=>u.role==="child");
   openModal(modalHead("Record a payment") + `<div class="modal-body">
@@ -1670,6 +1733,7 @@ const ACTIONS = {
   adAttClass(id){ setSess({adAttClass:id}); render(); },
   invoice(id){ invoiceModal(id); },
   openRecordPay(){ recordPayModal(); },
+  openPayout(id){ payoutModal(id); },
   openRegParent(){ regParentModal(); },
   openApplyTeacher(){ applyTeacherModal(); },
   openAddUser(){ addUserModal("parent"); },
@@ -1889,6 +1953,18 @@ const FORMS = {
     commit(()=>{ addEvent("📣","Announcement from the academy: "+text, roles, userIds); });
     form.reset();
     toast("Announcement sent to "+label+".");
+  },
+  payout(fd){
+    const t = user(fd.get("teacherId"));
+    const amount = Number(fd.get("amount"));
+    if(!t || !amount || amount<=0) return;
+    commit(()=>{
+      S.payouts = S.payouts || [];
+      S.payouts.push({id:uid("po"), teacherId:t.id, amount, ts:Date.now(), period:(fd.get("period")||"").trim(), method:fd.get("method")||"Bank transfer", note:(fd.get("note")||"").trim()});
+      addEvent("💰","Salary payout: "+money(amount)+((fd.get("period")||"").trim()?" for "+(fd.get("period")||"").trim():"")+" via "+(fd.get("method")||"bank transfer")+".",[],[t.id]);
+    });
+    closeModal();
+    toast("Payout recorded — "+t.name.split(" ")[0]+" has been notified.");
   },
   recordPay(fd){
     const childId=fd.get("childId"), courseId=fd.get("courseId");
